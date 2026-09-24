@@ -77,6 +77,7 @@ cd VideoCleaner
 Scripts/test.sh                 # unit + end-to-end tests (need ffmpeg; mkvtoolnix optional)
 Scripts/build-app.sh            # → build/VideoCleaner.app (universal)
 Scripts/build-app.sh --dmg      # …and build/VideoCleaner-<version>.dmg
+Scripts/build-app.sh --install  # …and install to ~/Applications
 ```
 
 Requires Xcode 16 or later (Swift 6 toolchain). The project is a plain Swift package:

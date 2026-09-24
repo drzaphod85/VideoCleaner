@@ -4,6 +4,7 @@
 #   Scripts/build-app.sh            # release build → build/VideoCleaner.app
 #   Scripts/build-app.sh --dmg      # …and build/VideoCleaner-<version>.dmg
 #   Scripts/build-app.sh --debug    # debug build
+#   Scripts/build-app.sh --install  # …and install to ~/Applications (no admin rights needed)
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -13,10 +14,12 @@ NAME="VideoCleaner"
 VERSION="$(cat VERSION)"
 CONFIG="release"
 MAKE_DMG=0
+INSTALL=0
 for arg in "$@"; do
     case "$arg" in
         --dmg) MAKE_DMG=1 ;;
         --debug) CONFIG="debug" ;;
+        --install) INSTALL=1 ;;
         *) echo "Unknown option: $arg" >&2; exit 1 ;;
     esac
 done
@@ -66,4 +69,14 @@ if [ "$MAKE_DMG" = 1 ]; then
     rm -f "$DMG"
     hdiutil create -quiet -volname "$NAME" -srcfolder "$STAGE/dmg" -ov -format UDZO "$DMG"
     echo "✓ $DMG"
+fi
+
+if [ "$INSTALL" = 1 ]; then
+    DEST="$HOME/Applications/$NAME.app"
+    mkdir -p "$HOME/Applications"
+    osascript -e "quit app \"$NAME\"" 2>/dev/null || true
+    rm -rf "$DEST"
+    ditto --noextattr --noqtn "$APP" "$DEST"   # the signed copy from the temp folder
+    codesign --verify --deep --strict "$DEST"
+    echo "✓ Installed: $DEST"
 fi
