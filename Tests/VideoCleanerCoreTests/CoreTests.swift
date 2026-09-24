@@ -87,6 +87,9 @@ import Testing
         #expect(Cuts.keyframe(atOrBefore: 5.9, in: keyframes) == 4)
         #expect(Cuts.nextKeyframe(after: 4, in: keyframes) == 6)
         #expect(Cuts.previousKeyframe(before: 4, in: keyframes) == 2)
+        #expect(Cuts.indexRange(of: keyframes, from: 3, to: 8) == 2..<5)
+        #expect(Cuts.indexRange(of: keyframes, from: 200, to: 300).isEmpty)
+        #expect(Cuts.nearestKeyframeIndex(to: 5.2, in: keyframes) == 3)
     }
 }
 

@@ -63,6 +63,7 @@ struct EditorView: View {
     @Environment(AppModel.self) private var model
     let item: VideoItem
     @FocusState private var focused: Bool
+    @State private var timeline = TimelineState()
 
     var body: some View {
         VStack(spacing: 0) {
@@ -73,11 +74,11 @@ struct EditorView: View {
             TransportBar(item: item)
                 .padding(.horizontal, 16)
                 .padding(.top, 10)
-            TimelineView(item: item)
+            TimelineView(item: item, state: timeline)
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
                 .simultaneousGesture(TapGesture().onEnded { focused = true })
-            CutBar(item: item)
+            CutBar(item: item, timeline: timeline)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
             if model.showLog {
@@ -114,6 +115,10 @@ struct EditorView: View {
         switch press.key {
         case .space:
             p.togglePlay(); return .handled
+        case .upArrow:
+            model.jumpKeyframe(item, forward: false); return .handled
+        case .downArrow:
+            model.jumpKeyframe(item, forward: true); return .handled
         case .leftArrow:
             if option { model.jumpKeyframe(item, forward: false) } else if shift { p.seek(to: p.currentTime - 1) } else { p.step(frames: -1) }
             return .handled
@@ -139,6 +144,10 @@ struct EditorView: View {
         case "k": p.togglePlay()
         case "j": p.seek(to: p.currentTime - 5)
         case "l": p.seek(to: p.currentTime + 5)
+        case "+", "=": timeline.zoomIn(around: p.currentTime)
+        case "-": timeline.zoomOut(around: p.currentTime)
+        case "0": timeline.fit()
+        case "z": timeline.zoomToKeyframes(item.keyframes, around: p.currentTime)
         default: return .ignored
         }
         return .handled
@@ -349,11 +358,15 @@ struct TransportBar: View {
             }
         case .loaded:
             let onKey = Cuts.isKeyframe(t, in: item.keyframes, tolerance: max(0.002, model.player.frameDuration / 2))
+            let index = (Cuts.nearestKeyframeIndex(to: t, in: item.keyframes) ?? 0) + 1
             HStack(spacing: 5) {
-                Circle().fill(onKey ? Color.green : Color.secondary.opacity(0.4)).frame(width: 8, height: 8)
-                Text(onKey ? L("Keyframe") : L("Between keyframes"))
+                Image(systemName: onKey ? "diamond.fill" : "diamond")
+                    .font(.system(size: 9))
+                    .foregroundStyle(onKey ? Color.accentColor : Color.secondary)
+                Text(onKey ? L("Keyframe %lld of %lld", index, item.keyframes.count) : L("Between keyframes"))
                     .font(.caption)
                     .foregroundStyle(onKey ? .primary : .secondary)
+                    .monospacedDigit()
             }
             .help(L("%lld keyframes. Cutting on a keyframe needs no re-encoding.", item.keyframes.count))
         case .failed:
@@ -370,34 +383,16 @@ struct TransportBar: View {
 struct CutBar: View {
     @Environment(AppModel.self) private var model
     let item: VideoItem
+    let timeline: TimelineState
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
-                HStack(spacing: 6) {
-                    Button { model.cutBefore(item) } label: {
-                        Label("Remove Before", systemImage: "arrow.left.to.line")
-                    }
-                    .help("Remove everything before the playhead ( [ )")
-                    Divider().frame(height: 18)
-                    Button { model.markIn(item) } label: {
-                        Label("Mark In", systemImage: "chevron.left.to.line")
-                    }
-                    .help("Mark the start of a middle part to remove ( I )")
-                    Button { model.markOut(item) } label: {
-                        Label("Mark Out", systemImage: "chevron.right.to.line")
-                    }
-                    .help("Mark the end of the part and remove it ( O )")
-                    .disabled(item.markIn == nil)
-                    Divider().frame(height: 18)
-                    Button { model.cutAfter(item) } label: {
-                        Label("Remove After", systemImage: "arrow.right.to.line")
-                    }
-                    .help("Remove everything after the playhead ( ] )")
+                ViewThatFits(in: .horizontal) {
+                    cutButtons.labelStyle(.titleAndIcon)
+                    cutButtons.labelStyle(.iconOnly)
                 }
                 .buttonStyle(.bordered)
-                .labelStyle(.titleAndIcon)
-                .fixedSize()
 
                 if let a = item.markIn {
                     HStack(spacing: 4) {
@@ -440,6 +435,40 @@ struct CutBar: View {
                 }
             }
         }
+    }
+
+    private var cutButtons: some View {
+        HStack(spacing: 6) {
+            Button { model.jumpKeyframe(item, forward: false) } label: {
+                Label("Previous Keyframe", systemImage: "backward.end.fill")
+            }
+            .help("Jump to the previous keyframe ( ↑ or ⌥← )")
+            .disabled(item.keyframes.isEmpty)
+            Button { model.jumpKeyframe(item, forward: true) } label: {
+                Label("Next Keyframe", systemImage: "forward.end.fill")
+            }
+            .help("Jump to the next keyframe ( ↓ or ⌥→ )")
+            .disabled(item.keyframes.isEmpty)
+            Divider().frame(height: 18)
+            Button { model.cutBefore(item) } label: {
+                Label("Remove Before", systemImage: "arrow.left.to.line")
+            }
+            .help("Remove everything before the playhead ( [ )")
+            Button { model.markIn(item) } label: {
+                Label("Mark In", systemImage: "chevron.left.to.line")
+            }
+            .help("Mark the start of a middle part to remove ( I )")
+            Button { model.markOut(item) } label: {
+                Label("Mark Out", systemImage: "chevron.right.to.line")
+            }
+            .help("Mark the end of the part and remove it ( O )")
+            .disabled(item.markIn == nil)
+            Button { model.cutAfter(item) } label: {
+                Label("Remove After", systemImage: "arrow.right.to.line")
+            }
+            .help("Remove everything after the playhead ( ] )")
+        }
+        .fixedSize()
     }
 
     @ViewBuilder

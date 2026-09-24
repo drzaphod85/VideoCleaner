@@ -49,6 +49,7 @@
 "Cleaned and re-timed" = "Puhdistettu ja ajastettu";
 "Clear Cuts" = "Tyhjennä leikkaukset";
 "Clear List" = "Tyhjennä luettelo";
+"Click or drag here to jump to the nearest keyframe" = "Napsauta tai vedä tästä siirtyäksesi lähimpään avainkuvaan";
 "Click to go to a time (e.g. 00:55,855)" = "Siirry tiettyyn aikaan napsauttamalla (esim. 00:55,855)";
 "Close" = "Sulje";
 "Combined extraction failed — trying track by track" = "Yhteinen purku epäonnistui — yritetään raita kerrallaan";
@@ -67,6 +68,7 @@
 "Default" = "Oletus";
 "Done" = "Valmis";
 "Done: %@" = "Valmis: %@";
+"Drag to move the zoomed window" = "Siirrä zoomattua näkymää vetämällä";
 "Drop to add" = "Lisää pudottamalla";
 "Drop video files or folders here" = "Pudota videotiedostoja tai kansioita tähän";
 "Dry Run" = "Kuivaharjoitus";
@@ -107,10 +109,12 @@
 "Install with Homebrew: brew install ffmpeg mkvtoolnix — or enter the path in Settings." = "Asenna Homebrew'lla: brew install ffmpeg mkvtoolnix — tai anna polku asetuksissa.";
 "Joining %lld parts" = "Yhdistetään %lld osaa";
 "Joining failed: %@" = "Yhdistäminen epäonnistui: %@";
+"Jump to the next keyframe ( ↓ or ⌥→ )" = "Siirry seuraavaan avainkuvaan ( ↓ tai ⌥→ )";
+"Jump to the previous keyframe ( ↑ or ⌥← )" = "Siirry edelliseen avainkuvaan ( ↑ tai ⌥← )";
 "Keep Processing" = "Jatka käsittelyä";
 "Keep this audio track" = "Säilytä tämä ääniraita";
-"Keyframe" = "Avainkuva";
-"Keyframes" = "Avainkuvat";
+"Keyframe %lld of %lld" = "Avainkuva %lld/%lld";
+"Keyframes (click to snap)" = "Avainkuvat (kiinnitä napsauttamalla)";
 "Keyframes could not be read" = "Avainkuvia ei voitu lukea";
 "Languages set" = "Kielet asetettu";
 "License" = "Lisenssi";
@@ -138,6 +142,7 @@
 "MP4/MOV is remuxed to .mkv without re-encoding. MKV is rewritten in place." = "MP4/MOV muunnetaan (remux) .mkv:ksi ilman uudelleenkoodausta. MKV kirjoitetaan uudelleen paikallaan.";
 "New length %@" = "Uusi kesto %@";
 "New length: %@ (was %@)" = "Uusi kesto: %@ (oli %@)";
+"Next Keyframe" = "Seuraava avainkuva";
 "Next keyframe (⌥→)" = "Seuraava avainkuva (⌥→)";
 "No audio tracks" = "Ei ääniraitoja";
 "No file selected" = "Tiedostoa ei ole valittu";
@@ -169,6 +174,7 @@
 "Preparing preview…" = "Valmistellaan esikatselua…";
 "Preview" = "Esikatselu";
 "Preview the result: playback jumps over the parts that are removed" = "Esikatsele lopputulosta: toisto hyppää poistettavien osien yli";
+"Previous Keyframe" = "Edellinen avainkuva";
 "Previous keyframe (⌥←)" = "Edellinen avainkuva (⌥←)";
 "Process" = "Käsittele";
 "Process every file that is not done yet (⌘R)" = "Käsittele kaikki keskeneräiset tiedostot (⌘R)";
@@ -220,9 +226,11 @@
 "Show Commands" = "Näytä komennot";
 "Show Commands for Selected File" = "Näytä valitun tiedoston komennot";
 "Show in Finder" = "Näytä Finderissa";
+"Show Keyframes" = "Näytä avainkuvat";
 "Show Log" = "Näytä loki";
 "Show or hide the log for the selected file" = "Näytä tai piilota valitun tiedoston loki";
 "Show or hide tracks and settings" = "Näytä tai piilota raidat ja asetukset";
+"Show the whole file ( 0 )" = "Näytä koko tiedosto ( 0 )";
 "Skip removed" = "Ohita poistettu";
 "Skipped: %@" = "Ohitettu: %@";
 "Skipping s%lld (image-based %@, cannot become .srt)" = "Ohitetaan s%lld (kuvapohjainen %@, ei voi muuntaa .srt:ksi)";
@@ -241,6 +249,7 @@
 "The target already exists" = "Kohde on jo olemassa";
 "The target already exists: %@ — skipping (delete or move it first)" = "Kohde on jo olemassa: %@ — ohitetaan (poista tai siirrä se ensin)";
 "The track has no language — choose one" = "Raidalta puuttuu kieli — valitse kieli";
+"The whole file" = "Koko tiedosto";
 "The whole file is marked as removed" = "Koko tiedosto on merkitty poistettavaksi";
 "timing shifted" = "ajoitus siirretty";
 "Tools" = "Työkalut";
@@ -254,10 +263,14 @@
 "Use mkvtoolnix for MKV files" = "Käytä mkvtoolnixia MKV-tiedostoille";
 "Video" = "Video";
 "VideoCleaner on GitHub" = "VideoCleaner GitHubissa";
+"Visible: %@" = "Näkyvissä: %@";
 "Would move the original to the Trash: %@" = "Siirtäisi alkuperäisen roskakoriin: %@";
 "Would remove font/position tags from the .srt files" = "Poistaisi fontti-/sijaintitunnisteet .srt-tiedostoista";
 "Would shift the subtitle timing to match the cut" = "Siirtäisi tekstitysten ajoitusta leikkauksen mukaan";
 "You can still cut using the timeline and process the file." = "Voit silti leikata aikajanalla ja käsitellä tiedoston.";
+"Zoom in ( + )" = "Lähennä ( + )";
+"Zoom in around the playhead so every keyframe can be seen and picked ( Z )" = "Lähennä toistokohdan ympäriltä, jotta jokainen avainkuva näkyy ja voidaan valita ( Z )";
+"Zoom out ( − )" = "Loitonna ( − )";
 "▶ Processing: %@" = "▶ Käsitellään: %@";
 "⛔ Cancelled — temporary files removed" = "⛔ Keskeytetty — väliaikaiset tiedostot poistettu";
 "✂︎ Cutting away: %@ (at keyframes, no re-encoding)" = "✂︎ Leikataan pois: %@ (avainkuvista, ei uudelleenkoodausta)";

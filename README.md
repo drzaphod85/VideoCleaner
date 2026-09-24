@@ -47,7 +47,7 @@ xattr -dr com.apple.quarantine /Applications/VideoCleaner.app
 | --- | --- |
 | Space / K | Play / pause |
 | ← / → | One frame back / forward |
-| ⌥← / ⌥→ | Previous / next keyframe |
+| ↑ / ↓ or ⌥← / ⌥→ | Previous / next keyframe |
 | ⇧← / ⇧→ | One second back / forward |
 | J / L | Five seconds back / forward |
 | [ | Remove everything before the playhead |
@@ -55,6 +55,11 @@ xattr -dr com.apple.quarantine /Applications/VideoCleaner.app
 | I, then O | Mark a part in the middle and remove it |
 | ⌫ | Undo the cut under the playhead |
 | Esc | Cancel a pending mark-in |
+| + / − | Zoom the timeline in / out around the playhead |
+| Z | Zoom in until every keyframe can be seen and picked |
+| 0 | Show the whole file |
+
+   The **keyframe lane** under the thumbnails shows every keyframe as a diamond when you zoom in (pinch, ⌘-scroll, the slider or **Show Keyframes**); clicking or dragging in the lane always lands exactly on a keyframe, and the keyframe nearest the playhead is highlighted. Scroll sideways to pan, or drag the window in the overview bar. **Previous/Next Keyframe** buttons sit right next to the cut buttons.
 
    Drag the red handles to adjust a cut. "Skip removed" previews the result by jumping over removed parts during playback.
 4. Choose tracks and languages in the **Tracks** tab of the inspector, and global options in **Processing**.

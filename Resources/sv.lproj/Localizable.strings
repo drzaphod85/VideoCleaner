@@ -49,6 +49,7 @@
 "Cleaned and re-timed" = "Rensade och tidsjusterade";
 "Clear Cuts" = "Rensa klipp";
 "Clear List" = "Töm listan";
+"Click or drag here to jump to the nearest keyframe" = "Klicka eller dra här för att hoppa till närmaste keyframe";
 "Click to go to a time (e.g. 00:55,855)" = "Klicka för att gå till en tid (t.ex. 00:55,855)";
 "Close" = "Stäng";
 "Combined extraction failed — trying track by track" = "Samlad extraktion misslyckades — försöker spår för spår";
@@ -67,6 +68,7 @@
 "Default" = "Standard";
 "Done" = "Klar";
 "Done: %@" = "Klart: %@";
+"Drag to move the zoomed window" = "Dra för att flytta det inzoomade fönstret";
 "Drop to add" = "Släpp för att lägga till";
 "Drop video files or folders here" = "Släpp videofiler eller mappar här";
 "Dry Run" = "Torrkörning";
@@ -107,10 +109,12 @@
 "Install with Homebrew: brew install ffmpeg mkvtoolnix — or enter the path in Settings." = "Installera med Homebrew: brew install ffmpeg mkvtoolnix — eller ange sökvägen i Inställningar.";
 "Joining %lld parts" = "Fogar ihop %lld delar";
 "Joining failed: %@" = "Hopfogning misslyckades: %@";
+"Jump to the next keyframe ( ↓ or ⌥→ )" = "Hoppa till nästa keyframe ( ↓ eller ⌥→ )";
+"Jump to the previous keyframe ( ↑ or ⌥← )" = "Hoppa till föregående keyframe ( ↑ eller ⌥← )";
 "Keep Processing" = "Fortsätt bearbeta";
 "Keep this audio track" = "Behåll ljudspåret";
-"Keyframe" = "Keyframe";
-"Keyframes" = "Keyframes";
+"Keyframe %lld of %lld" = "Keyframe %lld av %lld";
+"Keyframes (click to snap)" = "Keyframes (klicka för att fästa)";
 "Keyframes could not be read" = "Keyframes kunde inte läsas";
 "Languages set" = "Språk satta";
 "License" = "Licens";
@@ -138,6 +142,7 @@
 "MP4/MOV is remuxed to .mkv without re-encoding. MKV is rewritten in place." = "MP4/MOV remuxas till .mkv utan omkodning. MKV skrivs om på plats.";
 "New length %@" = "Ny längd %@";
 "New length: %@ (was %@)" = "Ny längd: %@ (var %@)";
+"Next Keyframe" = "Nästa keyframe";
 "Next keyframe (⌥→)" = "Nästa keyframe (⌥→)";
 "No audio tracks" = "Inga ljudspår";
 "No file selected" = "Ingen fil vald";
@@ -169,6 +174,7 @@
 "Preparing preview…" = "Förbereder förhandsvisning…";
 "Preview" = "Förhandsvisning";
 "Preview the result: playback jumps over the parts that are removed" = "Förhandsgranska resultatet: uppspelningen hoppar över delar som tas bort";
+"Previous Keyframe" = "Föregående keyframe";
 "Previous keyframe (⌥←)" = "Föregående keyframe (⌥←)";
 "Process" = "Bearbeta";
 "Process every file that is not done yet (⌘R)" = "Bearbeta alla filer som inte är klara (⌘R)";
@@ -220,9 +226,11 @@
 "Show Commands" = "Visa kommandon";
 "Show Commands for Selected File" = "Visa kommandon för markerad fil";
 "Show in Finder" = "Visa i Finder";
+"Show Keyframes" = "Visa keyframes";
 "Show Log" = "Visa logg";
 "Show or hide the log for the selected file" = "Visa/dölj loggen för markerad fil";
 "Show or hide tracks and settings" = "Visa/dölj spår och inställningar";
+"Show the whole file ( 0 )" = "Visa hela filen ( 0 )";
 "Skip removed" = "Hoppa över borttaget";
 "Skipped: %@" = "Hoppad: %@";
 "Skipping s%lld (image-based %@, cannot become .srt)" = "Hoppar s%lld (bildbaserad %@, kan inte bli .srt)";
@@ -241,6 +249,7 @@
 "The target already exists" = "Målet finns redan";
 "The target already exists: %@ — skipping (delete or move it first)" = "Målet finns redan: %@ — hoppar (radera/flytta den först)";
 "The track has no language — choose one" = "Spåret saknar språk — välj ett";
+"The whole file" = "Hela filen";
 "The whole file is marked as removed" = "Hela filen är markerad som borttagen";
 "timing shifted" = "tidsjusterad";
 "Tools" = "Verktyg";
@@ -254,10 +263,14 @@
 "Use mkvtoolnix for MKV files" = "Använd mkvtoolnix för MKV-filer";
 "Video" = "Video";
 "VideoCleaner on GitHub" = "VideoCleaner på GitHub";
+"Visible: %@" = "Synligt: %@";
 "Would move the original to the Trash: %@" = "Skulle flytta originalet till papperskorgen: %@";
 "Would remove font/position tags from the .srt files" = "Skulle rensa font-/placeringstaggar i .srt-filerna";
 "Would shift the subtitle timing to match the cut" = "Skulle tidsjustera undertexterna efter klippningen";
 "You can still cut using the timeline and process the file." = "Du kan fortfarande klippa via tidslinjen och bearbeta filen.";
+"Zoom in ( + )" = "Zooma in ( + )";
+"Zoom in around the playhead so every keyframe can be seen and picked ( Z )" = "Zooma in runt spelhuvudet så att varje keyframe syns och kan väljas ( Z )";
+"Zoom out ( − )" = "Zooma ut ( − )";
 "▶ Processing: %@" = "▶ Bearbetar: %@";
 "⛔ Cancelled — temporary files removed" = "⛔ Avbruten — temporära filer städade";
 "✂︎ Cutting away: %@ (at keyframes, no re-encoding)" = "✂︎ Klipper bort: %@ (vid keyframes, ingen omkodning)";

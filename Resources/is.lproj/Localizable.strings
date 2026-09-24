@@ -49,6 +49,7 @@
 "Cleaned and re-timed" = "Hreinsaður og tímastilltur";
 "Clear Cuts" = "Hreinsa klippingar";
 "Clear List" = "Tæma lista";
+"Click or drag here to jump to the nearest keyframe" = "Smelltu eða dragðu hér til að fara á næsta lykilramma";
 "Click to go to a time (e.g. 00:55,855)" = "Smelltu til að fara á tíma (t.d. 00:55,855)";
 "Close" = "Loka";
 "Combined extraction failed — trying track by track" = "Sameiginleg útdráttur mistókst — reyni eina rás í einu";
@@ -67,6 +68,7 @@
 "Default" = "Sjálfgefið";
 "Done" = "Lokið";
 "Done: %@" = "Lokið: %@";
+"Drag to move the zoomed window" = "Dragðu til að færa aðdregna gluggann";
 "Drop to add" = "Slepptu til að bæta við";
 "Drop video files or folders here" = "Slepptu myndskrám eða möppum hér";
 "Dry Run" = "Prufukeyrsla";
@@ -107,10 +109,12 @@
 "Install with Homebrew: brew install ffmpeg mkvtoolnix — or enter the path in Settings." = "Settu upp með Homebrew: brew install ffmpeg mkvtoolnix — eða sláðu inn slóðina í Stillingum.";
 "Joining %lld parts" = "Sameina %lld hluta";
 "Joining failed: %@" = "Sameining mistókst: %@";
+"Jump to the next keyframe ( ↓ or ⌥→ )" = "Fara á næsta lykilramma ( ↓ eða ⌥→ )";
+"Jump to the previous keyframe ( ↑ or ⌥← )" = "Fara á fyrri lykilramma ( ↑ eða ⌥← )";
 "Keep Processing" = "Halda vinnslu áfram";
 "Keep this audio track" = "Halda þessari hljóðrás";
-"Keyframe" = "Lykilrammi";
-"Keyframes" = "Lykilrammar";
+"Keyframe %lld of %lld" = "Lykilrammi %lld af %lld";
+"Keyframes (click to snap)" = "Lykilrammar (smelltu til að festa)";
 "Keyframes could not be read" = "Ekki tókst að lesa lykilramma";
 "Languages set" = "Tungumál stillt";
 "License" = "Leyfi";
@@ -138,6 +142,7 @@
 "MP4/MOV is remuxed to .mkv without re-encoding. MKV is rewritten in place." = "MP4/MOV er endurpakkað í .mkv án endurkóðunar. MKV er endurskrifað á sínum stað.";
 "New length %@" = "Ný lengd %@";
 "New length: %@ (was %@)" = "Ný lengd: %@ (var %@)";
+"Next Keyframe" = "Næsti lykilrammi";
 "Next keyframe (⌥→)" = "Næsti lykilrammi (⌥→)";
 "No audio tracks" = "Engar hljóðrásir";
 "No file selected" = "Engin skrá valin";
@@ -169,6 +174,7 @@
 "Preparing preview…" = "Undirbý forskoðun…";
 "Preview" = "Forskoðun";
 "Preview the result: playback jumps over the parts that are removed" = "Forskoða niðurstöðuna: spilun hoppar yfir hlutana sem eru fjarlægðir";
+"Previous Keyframe" = "Fyrri lykilrammi";
 "Previous keyframe (⌥←)" = "Fyrri lykilrammi (⌥←)";
 "Process" = "Vinna";
 "Process every file that is not done yet (⌘R)" = "Vinna allar skrár sem eru ekki tilbúnar (⌘R)";
@@ -220,9 +226,11 @@
 "Show Commands" = "Sýna skipanir";
 "Show Commands for Selected File" = "Sýna skipanir fyrir valda skrá";
 "Show in Finder" = "Sýna í Finder";
+"Show Keyframes" = "Sýna lykilramma";
 "Show Log" = "Sýna atvikaskrá";
 "Show or hide the log for the selected file" = "Sýna eða fela atvikaskrá valdrar skráar";
 "Show or hide tracks and settings" = "Sýna eða fela rásir og stillingar";
+"Show the whole file ( 0 )" = "Sýna alla skrána ( 0 )";
 "Skip removed" = "Sleppa fjarlægðu";
 "Skipped: %@" = "Sleppt: %@";
 "Skipping s%lld (image-based %@, cannot become .srt)" = "Sleppi s%lld (myndbyggður %@, getur ekki orðið .srt)";
@@ -241,6 +249,7 @@
 "The target already exists" = "Markskráin er þegar til";
 "The target already exists: %@ — skipping (delete or move it first)" = "Markskráin er þegar til: %@ — sleppi (eyddu henni eða færðu fyrst)";
 "The track has no language — choose one" = "Rásina vantar tungumál — veldu eitt";
+"The whole file" = "Öll skráin";
 "The whole file is marked as removed" = "Öll skráin er merkt sem fjarlægð";
 "timing shifted" = "tímastillt";
 "Tools" = "Verkfæri";
@@ -254,10 +263,14 @@
 "Use mkvtoolnix for MKV files" = "Nota mkvtoolnix fyrir MKV-skrár";
 "Video" = "Myndskeið";
 "VideoCleaner on GitHub" = "VideoCleaner á GitHub";
+"Visible: %@" = "Sýnilegt: %@";
 "Would move the original to the Trash: %@" = "Myndi færa frumritið í ruslið: %@";
 "Would remove font/position tags from the .srt files" = "Myndi fjarlægja leturgerðar-/staðsetningarmerki úr .srt-skránum";
 "Would shift the subtitle timing to match the cut" = "Myndi tímastilla skjátextann eftir klippinguna";
 "You can still cut using the timeline and process the file." = "Þú getur samt klippt á tímalínunni og unnið skrána.";
+"Zoom in ( + )" = "Auka aðdrátt ( + )";
+"Zoom in around the playhead so every keyframe can be seen and picked ( Z )" = "Auka aðdrátt kringum spilunarhausinn svo hver lykilrammi sjáist og megi velja hann ( Z )";
+"Zoom out ( − )" = "Minnka aðdrátt ( − )";
 "▶ Processing: %@" = "▶ Vinn: %@";
 "⛔ Cancelled — temporary files removed" = "⛔ Hætt við — tímabundnum skrám eytt";
 "✂︎ Cutting away: %@ (at keyframes, no re-encoding)" = "✂︎ Klippi burt: %@ (við lykilramma, engin endurkóðun)";

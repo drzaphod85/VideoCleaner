@@ -66,6 +66,22 @@ public enum Cuts {
         return i > 0 ? keyframes[i - 1] : nil
     }
 
+    /// Indexes of the keyframes inside [from, to].
+    public static func indexRange(of keyframes: [Double], from: Double, to: Double) -> Range<Int> {
+        let lo = lowerBound(from, in: keyframes)
+        let hi = lowerBound(to + 1e-9, in: keyframes)
+        return lo..<max(lo, hi)
+    }
+
+    /// Index of the keyframe nearest to t (nil when there are none).
+    public static func nearestKeyframeIndex(to t: Double, in keyframes: [Double]) -> Int? {
+        guard !keyframes.isEmpty else { return nil }
+        let i = lowerBound(t, in: keyframes)
+        if i == 0 { return 0 }
+        if i == keyframes.count { return i - 1 }
+        return (t - keyframes[i - 1] <= keyframes[i] - t) ? i - 1 : i
+    }
+
     public static func isKeyframe(_ t: Double, in keyframes: [Double], tolerance: Double = 0.002) -> Bool {
         guard let k = nearestKeyframe(to: t, in: keyframes) else { return false }
         return abs(k - t) <= tolerance

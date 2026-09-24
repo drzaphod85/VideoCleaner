@@ -49,6 +49,7 @@
 "Cleaned and re-timed" = "Rensede og tidsjusterede";
 "Clear Cuts" = "Ryd klip";
 "Clear List" = "Tøm listen";
+"Click or drag here to jump to the nearest keyframe" = "Klik eller træk her for at hoppe til nærmeste keyframe";
 "Click to go to a time (e.g. 00:55,855)" = "Klik for at gå til et tidspunkt (f.eks. 00:55,855)";
 "Close" = "Luk";
 "Combined extraction failed — trying track by track" = "Samlet udtrækning mislykkedes — prøver spor for spor";
@@ -67,6 +68,7 @@
 "Default" = "Standard";
 "Done" = "Færdig";
 "Done: %@" = "Færdig: %@";
+"Drag to move the zoomed window" = "Træk for at flytte det zoomede vindue";
 "Drop to add" = "Slip for at tilføje";
 "Drop video files or folders here" = "Slip videofiler eller mapper her";
 "Dry Run" = "Prøvekørsel";
@@ -107,10 +109,12 @@
 "Install with Homebrew: brew install ffmpeg mkvtoolnix — or enter the path in Settings." = "Installér med Homebrew: brew install ffmpeg mkvtoolnix — eller angiv stien i Indstillinger.";
 "Joining %lld parts" = "Sammensætter %lld dele";
 "Joining failed: %@" = "Sammensætning mislykkedes: %@";
+"Jump to the next keyframe ( ↓ or ⌥→ )" = "Hop til næste keyframe ( ↓ eller ⌥→ )";
+"Jump to the previous keyframe ( ↑ or ⌥← )" = "Hop til forrige keyframe ( ↑ eller ⌥← )";
 "Keep Processing" = "Fortsæt behandling";
 "Keep this audio track" = "Behold lydsporet";
-"Keyframe" = "Keyframe";
-"Keyframes" = "Keyframes";
+"Keyframe %lld of %lld" = "Keyframe %lld af %lld";
+"Keyframes (click to snap)" = "Keyframes (klik for at fastgøre)";
 "Keyframes could not be read" = "Keyframes kunne ikke læses";
 "Languages set" = "Sprog angivet";
 "License" = "Licens";
@@ -138,6 +142,7 @@
 "MP4/MOV is remuxed to .mkv without re-encoding. MKV is rewritten in place." = "MP4/MOV remuxes til .mkv uden omkodning. MKV omskrives på stedet.";
 "New length %@" = "Ny længde %@";
 "New length: %@ (was %@)" = "Ny længde: %@ (var %@)";
+"Next Keyframe" = "Næste keyframe";
 "Next keyframe (⌥→)" = "Næste keyframe (⌥→)";
 "No audio tracks" = "Ingen lydspor";
 "No file selected" = "Ingen fil valgt";
@@ -169,6 +174,7 @@
 "Preparing preview…" = "Forbereder forhåndsvisning…";
 "Preview" = "Forhåndsvisning";
 "Preview the result: playback jumps over the parts that are removed" = "Forhåndsvis resultatet: afspilningen springer over de dele, der fjernes";
+"Previous Keyframe" = "Forrige keyframe";
 "Previous keyframe (⌥←)" = "Forrige keyframe (⌥←)";
 "Process" = "Behandl";
 "Process every file that is not done yet (⌘R)" = "Behandl alle filer, der ikke er færdige (⌘R)";
@@ -220,9 +226,11 @@
 "Show Commands" = "Vis kommandoer";
 "Show Commands for Selected File" = "Vis kommandoer for valgt fil";
 "Show in Finder" = "Vis i Finder";
+"Show Keyframes" = "Vis keyframes";
 "Show Log" = "Vis log";
 "Show or hide the log for the selected file" = "Vis/skjul loggen for den valgte fil";
 "Show or hide tracks and settings" = "Vis/skjul spor og indstillinger";
+"Show the whole file ( 0 )" = "Vis hele filen ( 0 )";
 "Skip removed" = "Spring fjernet over";
 "Skipped: %@" = "Sprunget over: %@";
 "Skipping s%lld (image-based %@, cannot become .srt)" = "Springer s%lld over (billedbaseret %@, kan ikke blive .srt)";
@@ -241,6 +249,7 @@
 "The target already exists" = "Målet findes allerede";
 "The target already exists: %@ — skipping (delete or move it first)" = "Målet findes allerede: %@ — springer over (slet eller flyt den først)";
 "The track has no language — choose one" = "Sporet mangler sprog — vælg et";
+"The whole file" = "Hele filen";
 "The whole file is marked as removed" = "Hele filen er markeret som fjernet";
 "timing shifted" = "tidsjusteret";
 "Tools" = "Værktøjer";
@@ -254,10 +263,14 @@
 "Use mkvtoolnix for MKV files" = "Brug mkvtoolnix til MKV-filer";
 "Video" = "Video";
 "VideoCleaner on GitHub" = "VideoCleaner på GitHub";
+"Visible: %@" = "Synligt: %@";
 "Would move the original to the Trash: %@" = "Ville flytte originalen til papirkurven: %@";
 "Would remove font/position tags from the .srt files" = "Ville fjerne skrifttype-/placeringsmærker fra .srt-filerne";
 "Would shift the subtitle timing to match the cut" = "Ville tidsjustere underteksterne efter klipningen";
 "You can still cut using the timeline and process the file." = "Du kan stadig klippe via tidslinjen og behandle filen.";
+"Zoom in ( + )" = "Zoom ind ( + )";
+"Zoom in around the playhead so every keyframe can be seen and picked ( Z )" = "Zoom ind omkring afspilningshovedet, så hver keyframe kan ses og vælges ( Z )";
+"Zoom out ( − )" = "Zoom ud ( − )";
 "▶ Processing: %@" = "▶ Behandler: %@";
 "⛔ Cancelled — temporary files removed" = "⛔ Annulleret — midlertidige filer fjernet";
 "✂︎ Cutting away: %@ (at keyframes, no re-encoding)" = "✂︎ Klipper væk: %@ (ved keyframes, ingen omkodning)";

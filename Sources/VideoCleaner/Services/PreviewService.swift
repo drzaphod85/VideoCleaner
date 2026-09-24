@@ -107,29 +107,41 @@ final class PreviewService {
     }
 }
 
-/// Timeline thumbnails from the playable asset (cached, low resolution, keyframe-tolerant for speed).
+/// Timeline thumbnails from the playable asset. The fast generator may return a nearby keyframe (fine for
+/// the overview); the exact one is used when zoomed in, where every tile must show its own moment.
 final class ThumbnailProvider: @unchecked Sendable {
-    private let generator: AVAssetImageGenerator
-    private let cache = NSCache<NSNumber, NSImage>()
+    private let fast: AVAssetImageGenerator
+    private let exact: AVAssetImageGenerator
+    private let cache = NSCache<NSString, NSImage>()
 
     init(url: URL) {
         let asset = AVURLAsset(url: url)
-        generator = AVAssetImageGenerator(asset: asset)
-        generator.appliesPreferredTrackTransform = true
-        generator.maximumSize = CGSize(width: 240, height: 136)
-        generator.requestedTimeToleranceBefore = CMTime(seconds: 2, preferredTimescale: 600)
-        generator.requestedTimeToleranceAfter = CMTime(seconds: 2, preferredTimescale: 600)
-        cache.countLimit = 600
+        func make(tolerance: Double) -> AVAssetImageGenerator {
+            let g = AVAssetImageGenerator(asset: asset)
+            g.appliesPreferredTrackTransform = true
+            g.maximumSize = CGSize(width: 240, height: 136)
+            g.requestedTimeToleranceBefore = CMTime(seconds: tolerance, preferredTimescale: 600)
+            g.requestedTimeToleranceAfter = CMTime(seconds: tolerance, preferredTimescale: 600)
+            return g
+        }
+        fast = make(tolerance: 2)
+        exact = make(tolerance: 0)
+        cache.countLimit = 800
     }
 
-    func cached(at t: Double) -> NSImage? { cache.object(forKey: NSNumber(value: Int(t * 2))) }
+    private func key(_ t: Double, _ exact: Bool) -> NSString {
+        exact ? "e\(Int(t * 25))" as NSString : "f\(Int(t * 2))" as NSString
+    }
 
-    func image(at t: Double) async -> NSImage? {
-        let key = NSNumber(value: Int(t * 2))
-        if let img = cache.object(forKey: key) { return img }
+    func cached(at t: Double, exact: Bool = false) -> NSImage? { cache.object(forKey: key(t, exact)) }
+
+    func image(at t: Double, exact: Bool = false) async -> NSImage? {
+        let k = key(t, exact)
+        if let img = cache.object(forKey: k) { return img }
+        let generator = exact ? self.exact : fast
         guard let cg = try? await generator.image(at: CMTime(seconds: t, preferredTimescale: 600)).image else { return nil }
         let img = NSImage(cgImage: cg, size: NSSize(width: cg.width, height: cg.height))
-        cache.setObject(img, forKey: key)
+        cache.setObject(img, forKey: k)
         return img
     }
 }
