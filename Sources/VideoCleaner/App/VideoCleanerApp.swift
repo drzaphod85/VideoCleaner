@@ -74,14 +74,14 @@ struct AppCommands: Commands {
                 .keyboardShortcut("o")
         }
         CommandMenu("Process") {
-            Button("Run All") { model.runAll() }
+            Button("Process All") { model.runAll() }
                 .keyboardShortcut("r")
                 .disabled(model.isProcessing || model.items.isEmpty)
-            Button("Run Selected") { model.runSelected() }
+            Button("Process Selected") { model.runSelected() }
                 .keyboardShortcut("r", modifiers: [.command, .shift])
                 .disabled(model.isProcessing || model.selection.isEmpty)
             Button("Cancel") { model.cancel() }
-                .keyboardShortcut(".")
+                .keyboardShortcut(".", modifiers: .command)
                 .disabled(!model.isProcessing)
             Divider()
             Button("Show Commands for Selected File") {

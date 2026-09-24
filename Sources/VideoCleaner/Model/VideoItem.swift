@@ -87,8 +87,25 @@ final class VideoItem: Identifiable {
 
     // MARK: Cuts
 
-    func cutPlan(snapped: Bool = true) -> CutPlan {
-        CutPlan(removals: removals, duration: duration, keyframes: keyframes, precise: preciseCut)
+    /// Number of kept parts that start between keyframes (those make the video re-encode).
+    var misalignedCuts: Int {
+        guard keyframesState == .loaded, !removals.isEmpty else { return 0 }
+        return CutPlan(removals: removals, duration: duration, keyframes: keyframes, precise: false).misalignedSegments.count
+    }
+
+    var needsReencode: Bool { misalignedCuts > 0 }
+
+    /// The plan as it will be processed: exact cuts (re-encode) when any cut is between keyframes.
+    func cutPlan() -> CutPlan {
+        CutPlan(removals: removals, duration: duration, keyframes: keyframes, precise: preciseCut || needsReencode)
+    }
+
+    /// Moves every cut where a kept part starts to the nearest keyframe, so nothing needs re-encoding.
+    func snapCutsToKeyframes() {
+        setRemovals(removals.map { r in
+            guard r.end < duration - 0.001, let k = Cuts.nearestKeyframe(to: r.end, in: keyframes) else { return r }
+            return TimeRange(r.start, max(k, r.start + 0.04))
+        })
     }
 
     func addRemoval(_ r: TimeRange) {

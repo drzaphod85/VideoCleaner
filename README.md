@@ -3,7 +3,7 @@
 A native macOS app (Swift + SwiftUI) for cleaning up MKV and MP4 files **without re-encoding**:
 
 - ✂️ **Cut** — remove the beginning, the end, or any number of parts in the middle, right in a video preview with a zoomable timeline.
-  Cuts snap to **keyframes**, so the video is only remuxed, never re-encoded. Frame-exact cutting (hardware re-encode with VideoToolbox) is available as an opt-in fallback.
+  Cuts on **keyframes** only remux the file (no re-encoding). You can also cut anywhere: a cut between keyframes is made frame-exact by re-encoding the video with VideoToolbox, with a clear warning and a one-click "Move Cuts to Keyframes" to avoid it.
 - 💬 **Subtitles** — pick which subtitle tracks to keep (by language or per track), save them as `.srt` next to the video, strip `<font>` and `{\an8}` tags, and re-time them automatically to match the cut video. Forced/SDH tracks can be tagged in the file name (`Movie.sv.forced.srt`).
 - 🔊 **Audio tracks** — remove tracks by language (e.g. `de, ru`) or one by one. At least one track is always kept.
 - 🏷️ **Languages** — set or fix track languages (tracks tagged `und` are highlighted). A "language tags only" mode changes MKV files in place in seconds.
@@ -63,11 +63,11 @@ xattr -dr com.apple.quarantine /Applications/VideoCleaner.app
 
    Drag the red handles to adjust a cut. "Skip removed" previews the result by jumping over removed parts during playback.
 4. Choose tracks and languages in the **Tracks** tab of the inspector, and global options in **Processing**.
-5. Press **Run** (⌘R). Progress and a detailed log are shown per file.
+5. Press **Process File** at the bottom right (⌘↩), or **Process All** for the whole list (⌘R). The bar above the button says what will happen to the file; progress and a detailed log are shown per file.
 
 ### How cutting works
 
-Streams are copied, so a kept part has to start on a keyframe. With **Snap to keyframes** on (default), the start of every kept part is placed on the nearest keyframe and the preview shows exactly what you get. If a cut is placed between keyframes, the app tells you and offers **Frame-exact (re-encodes video)**. Subtitles are extracted in full and shifted in Swift using the exact positions of the kept parts, so they stay in sync.
+When every kept part starts on a keyframe, streams are copied and the file is only remuxed — fast and lossless. When a kept part starts between keyframes, stream copy can't start there, so the video is re-encoded (hardware VideoToolbox, audio still copied) and every cut lands exactly where you put it. The editor warns about this before you process and offers **Move Cuts to Keyframes**; turning on **Snap to keyframes** makes new cuts land on keyframes automatically. Subtitles are extracted in full and shifted using the exact positions of the kept parts, so they stay in sync either way.
 
 ## Building from source
 

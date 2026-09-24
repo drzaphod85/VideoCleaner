@@ -10,7 +10,7 @@ import VideoCleanerCore
 extension AppModel {
     /// Where a kept part may start: the nearest keyframe when snapping (so no re-encoding is needed).
     func snappedKeepStart(_ t: Double, item: VideoItem) -> Double {
-        guard snapToKeyframes, !item.preciseCut, let k = Cuts.nearestKeyframe(to: t, in: item.keyframes) else { return t }
+        guard snapToKeyframes, let k = Cuts.nearestKeyframe(to: t, in: item.keyframes) else { return t }
         return k
     }
 
@@ -81,6 +81,7 @@ struct EditorView: View {
             CutBar(item: item, timeline: timeline)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
+            ActionBar(item: item)
             if model.showLog {
                 LogPanel(item: item)
                     .frame(height: 190)
@@ -414,7 +415,7 @@ struct CutBar: View {
                         Text(verbatim: "−\(TimeFormat.string(item.duration - plan.outputDuration, millis: false))")
                             .font(.caption).foregroundStyle(.secondary).monospacedDigit()
                     }
-                    Button("Clear Cuts") { item.removals = []; item.markIn = nil; item.preciseCut = false }
+                    Button("Clear Cuts") { item.removals = []; item.markIn = nil }
                 }
             }
 
@@ -473,25 +474,121 @@ struct CutBar: View {
 
     @ViewBuilder
     private var precisionNote: some View {
-        let misaligned = CutPlan(removals: item.removals, duration: item.duration, keyframes: item.keyframes,
-                                 precise: false).misalignedSegments
-        if !misaligned.isEmpty && item.keyframesState == .loaded {
+        let misaligned = item.misalignedCuts
+        if misaligned > 0 {
             HStack(spacing: 6) {
                 Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
-                Text(misaligned.count == 1 ? L("1 cut is between keyframes") : L("%lld cuts are between keyframes", misaligned.count))
+                Text(misaligned == 1 ? L("1 cut is between keyframes — the video will be re-encoded")
+                                     : L("%lld cuts are between keyframes — the video will be re-encoded", misaligned))
                     .font(.caption)
-                Toggle("Frame-exact (re-encodes video)", isOn: Bindable(item).preciseCut)
-                    .toggleStyle(.checkbox)
-                    .font(.caption)
-                    .help("Off: the part starts at the nearest keyframe before the cut (no re-encoding).\nOn: the video is re-encoded with VideoToolbox so the cut is exact — takes longer.")
+                    .help("Cuts between keyframes are exact, but the whole video is re-encoded with VideoToolbox, which takes longer. Move the cuts to keyframes to only remux.")
+                Button("Move Cuts to Keyframes") { item.snapCutsToKeyframes() }
+                    .controlSize(.small)
+                    .help("Move every cut where a kept part starts to the nearest keyframe — then nothing is re-encoded")
             }
             .fixedSize()
-        } else if item.preciseCut {
-            Toggle("Frame-exact (re-encodes video)", isOn: Bindable(item).preciseCut).toggleStyle(.checkbox).font(.caption).fixedSize()
         } else if item.keyframesState == .loaded {
             Label("All cuts on keyframes — no re-encoding", systemImage: "checkmark.seal.fill")
                 .labelStyle(.titleAndIcon).font(.caption).foregroundStyle(.green).fixedSize()
         }
+    }
+}
+
+// MARK: - Action bar
+
+/// What will happen to the file, and the button that does it.
+struct ActionBar: View {
+    @Environment(AppModel.self) private var model
+    let item: VideoItem
+
+    var body: some View {
+        HStack(spacing: 12) {
+            status
+            Spacer(minLength: 8)
+            if model.isProcessing {
+                Button(role: .cancel) { model.cancel() } label: {
+                    Label("Cancel", systemImage: "stop.fill")
+                }
+                .controlSize(.large)
+                .keyboardShortcut(".", modifiers: .command)
+            } else {
+                let remaining = model.items.filter { $0.status != .done && $0.info != nil }.count
+                if model.items.count > 1 {
+                    Button(L("Process All (%lld)", remaining)) { model.runAll() }
+                        .controlSize(.large)
+                        .disabled(remaining == 0 || !model.tools.hasFFmpeg)
+                        .help("Process every file in the list that is not done yet (⌘R)")
+                }
+                Button { model.run([item]) } label: {
+                    Label("Process File", systemImage: "play.fill")
+                        .padding(.horizontal, 10)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .keyboardShortcut(.return, modifiers: .command)
+                .disabled(item.info == nil || !model.tools.hasFFmpeg)
+                .help("Process this file with the cuts, tracks and settings shown (⌘↩)")
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(.bar)
+        .overlay(alignment: .top) { Divider() }
+    }
+
+    @ViewBuilder
+    private var status: some View {
+        switch item.status {
+        case .running:
+            HStack(spacing: 8) {
+                ProgressView(value: item.progress).frame(width: 200)
+                Text(verbatim: "\(Int(item.progress * 100)) %").monospacedDigit().foregroundStyle(.secondary)
+                if let last = item.log.last(where: { $0.kind == .step }) {
+                    Text(last.text).font(.caption).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
+                }
+            }
+        case .done:
+            HStack(spacing: 8) {
+                Label("Done", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+                Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([item.url]) }
+                    .buttonStyle(.link)
+            }
+        case .failed(let message):
+            Label(message, systemImage: "xmark.octagon.fill").foregroundStyle(.red).lineLimit(2)
+        case .skipped(let reason):
+            Label(L("Skipped: %@", reason), systemImage: "forward.fill").foregroundStyle(.secondary)
+        case .cancelled:
+            Label("Cancelled", systemImage: "stop.circle").foregroundStyle(.secondary)
+        case .pending:
+            Text(summary).font(.callout).foregroundStyle(.secondary).lineLimit(2)
+        }
+    }
+
+    /// e.g. "Will: cut away 2 parts (re-encodes video) · remove 1 audio track · save 2 subtitles as .srt · convert to MKV"
+    private var summary: String {
+        guard let info = item.info else { return "" }
+        let o = model.options
+        if o.languageOnly {
+            return item.languageOverrides.isEmpty ? L("Nothing to change — no languages were edited")
+                                                  : L("Will: set %lld track languages", item.languageOverrides.count)
+        }
+        let rules = model.rules
+        var parts: [String] = []
+        if !item.removals.isEmpty {
+            parts.append(item.needsReencode ? L("cut away %lld parts (re-encodes video)", item.removals.count)
+                                            : L("cut away %lld parts (remux only)", item.removals.count))
+        }
+        let removedAudio = info.audioStreams.filter { !item.keepsAudio($0, rules: rules) }.count
+        if removedAudio > 0 && !item.removesAllAudio(rules: rules) {
+            parts.append(L("remove %lld audio tracks", removedAudio))
+        }
+        let subs = info.subtitleStreams.filter { item.selectsSubtitle($0, rules: rules) && $0.isTextSubtitle }.count
+        if o.extractSubtitles && subs > 0 { parts.append(L("save %lld subtitles as .srt", subs)) }
+        if o.removeSubtitlesFromVideo && !info.subtitleStreams.isEmpty { parts.append(L("strip subtitles from the video")) }
+        if !item.languageOverrides.isEmpty { parts.append(L("set %lld track languages", item.languageOverrides.count)) }
+        if o.convertToMKV && item.url.pathExtension.lowercased() != "mkv" { parts.append(L("convert to MKV")) }
+        if parts.isEmpty { parts.append(L("write a clean copy")) }
+        return L("Will: %@", parts.joined(separator: " · "))
     }
 }
 

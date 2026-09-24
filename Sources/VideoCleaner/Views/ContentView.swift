@@ -74,11 +74,11 @@ struct ContentView: View {
                 .help("Cancel processing (⌘.)")
             } else {
                 Menu {
-                    Button(L("Run All (%lld)", model.items.filter { $0.status != .done }.count)) { model.runAll() }
-                    Button(L("Run Selected (%lld)", model.selection.count)) { model.runSelected() }
+                    Button(L("Process All (%lld)", model.items.filter { $0.status != .done }.count)) { model.runAll() }
+                    Button(L("Process Selected (%lld)", model.selection.count)) { model.runSelected() }
                         .disabled(model.selection.isEmpty)
                 } label: {
-                    Label("Run", systemImage: "play.fill")
+                    Label("Process", systemImage: "play.fill")
                 } primaryAction: {
                     model.runAll()
                 }

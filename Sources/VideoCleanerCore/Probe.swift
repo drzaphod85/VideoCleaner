@@ -32,6 +32,7 @@ private struct FFProbeOutput: Decodable {
         let r_frame_rate: String?
         let avg_frame_rate: String?
         let bit_rate: String?
+        let start_time: String?
         let disposition: [String: Int]?
         let tags: [String: String]?
     }
@@ -77,7 +78,8 @@ public enum Probe {
                 width: s.width, height: s.height, channels: s.channels, channelLayout: s.channel_layout,
                 sampleRate: s.sample_rate.flatMap { Int($0) }, bitRate: s.bit_rate.flatMap { Int($0) },
                 frameRate: rate(s.avg_frame_rate) ?? rate(s.r_frame_rate), pixelFormat: s.pix_fmt,
-                profile: s.profile, colorTransfer: s.color_transfer)
+                profile: s.profile, colorTransfer: s.color_transfer,
+                startTime: s.start_time.flatMap { Double($0) } ?? 0)
         }
         let f = out.format
         return MediaInfo(url: url,

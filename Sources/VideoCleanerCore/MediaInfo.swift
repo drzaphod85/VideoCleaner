@@ -40,20 +40,22 @@ public struct StreamInfo: Sendable, Identifiable, Hashable {
     public let pixelFormat: String?
     public let profile: String?
     public let colorTransfer: String?
+    /// Start time of the stream in the container (seconds).
+    public let startTime: Double
 
     public init(index: Int, kind: StreamKind, ordinal: Int, codec: String, codecLongName: String? = nil,
                 language: String? = nil, title: String? = nil, isDefault: Bool = false, isForced: Bool = false,
                 isHearingImpaired: Bool = false, isAttachedPicture: Bool = false, width: Int? = nil,
                 height: Int? = nil, channels: Int? = nil, channelLayout: String? = nil, sampleRate: Int? = nil,
                 bitRate: Int? = nil, frameRate: Double? = nil, pixelFormat: String? = nil, profile: String? = nil,
-                colorTransfer: String? = nil) {
+                colorTransfer: String? = nil, startTime: Double = 0) {
         self.index = index; self.kind = kind; self.ordinal = ordinal; self.codec = codec
         self.codecLongName = codecLongName; self.language = language; self.title = title
         self.isDefault = isDefault; self.isForced = isForced; self.isHearingImpaired = isHearingImpaired
         self.isAttachedPicture = isAttachedPicture; self.width = width; self.height = height
         self.channels = channels; self.channelLayout = channelLayout; self.sampleRate = sampleRate
         self.bitRate = bitRate; self.frameRate = frameRate; self.pixelFormat = pixelFormat
-        self.profile = profile; self.colorTransfer = colorTransfer
+        self.profile = profile; self.colorTransfer = colorTransfer; self.startTime = startTime
     }
 
     public var isTextSubtitle: Bool { kind == .subtitle && SubtitleCodecs.isText(codec) }

@@ -29,7 +29,7 @@ struct FileListView: View {
     @ViewBuilder
     private func menu(for item: VideoItem) -> some View {
         Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([item.url]) }
-        Button("Run Only This File") { model.run([item]) }
+        Button("Process Only This File") { model.run([item]) }
             .disabled(model.isProcessing || item.info == nil)
         Button("Show Commands") { model.showCommands(for: item) }
             .disabled(item.info == nil)
@@ -153,6 +153,10 @@ struct FileRow: View {
         HStack(spacing: 4) {
             if !item.removals.isEmpty {
                 Badge(text: "\(item.removals.count)", icon: "scissors", color: .orange)
+            }
+            if item.needsReencode {
+                Badge(text: L("re-encode"), icon: "cpu", color: .purple)
+                    .help("A cut is between keyframes — the video will be re-encoded")
             }
             if removedAudio > 0 {
                 Badge(text: "−\(removedAudio)", icon: "speaker.wave.2", color: .red)

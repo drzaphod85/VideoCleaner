@@ -41,7 +41,7 @@ final class AppModel {
         options = Prefs.load(ProcessingOptions.self, key: Prefs.options) ?? ProcessingOptions()
         subtitleLanguagesText = d.string(forKey: Prefs.subtitleLangs) ?? ""
         removeAudioLanguagesText = d.string(forKey: Prefs.removeAudioLangs) ?? ""
-        snapToKeyframes = d.object(forKey: Prefs.snap) as? Bool ?? true
+        snapToKeyframes = d.object(forKey: Prefs.snap) as? Bool ?? false
         skipRemovedWhilePlaying = d.object(forKey: Prefs.skipRemoved) as? Bool ?? false
         let overrides = d.dictionary(forKey: Prefs.toolOverrides) as? [String: String] ?? [:]
         toolOverrides = overrides
@@ -275,7 +275,7 @@ enum Prefs {
     static let options = "processingOptions"
     static let subtitleLangs = "subtitleLanguages"
     static let removeAudioLangs = "removeAudioLanguages"
-    static let snap = "snapToKeyframes"
+    static let snap = "snapToKeyframesV2"  // default changed to off in 1.1
     static let skipRemoved = "skipRemovedWhilePlaying"
     static let toolOverrides = "toolOverrides"
 

@@ -37,6 +37,8 @@ public struct ProcessingJob: Sendable {
     /// New language per stream index (three-letter code). Only changed tracks.
     public var languages: [Int: String]
     public var removals: [TimeRange]
+    /// Always re-encode the video when cutting. Without it the video is only re-encoded when a kept part
+    /// starts between keyframes (then automatically, so every cut lands exactly where it was placed).
     public var preciseCut: Bool
     public var options: ProcessingOptions
 
@@ -98,6 +100,9 @@ private final class Run: @unchecked Sendable {
     let progressHandler: @Sendable (Double) -> Void
     let fm = FileManager.default
     var tempItems: [URL] = []
+    /// Re-encode the video (frame-exact cuts). Decided in execute().
+    var reencode = false
+    var keyframes: [Double] = []
 
     init(job: ProcessingJob, tools: ToolPaths, dryRun: Bool, log: @escaping @Sendable (LogEntry) -> Void,
          progress: @escaping @Sendable (Double) -> Void) {
@@ -181,24 +186,28 @@ private final class Run: @unchecked Sendable {
         }
 
         // Cuts
-        var keyframes = job.keyframes
-        if !job.removals.isEmpty && keyframes.isEmpty && !job.preciseCut {
+        keyframes = job.keyframes
+        if !job.removals.isEmpty && keyframes.isEmpty {
             log(.info, L("Reading keyframes…"))
             keyframes = (try? await Probe.keyframes(input, info: info, tools: tools)) ?? []
         }
-        let plan = CutPlan(removals: job.removals, duration: info.duration, keyframes: keyframes,
+        var plan = CutPlan(removals: job.removals, duration: info.duration, keyframes: keyframes,
                            precise: job.preciseCut)
+        reencode = job.preciseCut && plan.isCutting
+        if plan.isCutting && !reencode && !keyframes.isEmpty && !plan.misalignedSegments.isEmpty {
+            // A kept part starts between keyframes: stream copy cannot start there, so re-encode for an exact cut
+            for seg in plan.misalignedSegments {
+                log(.warning, L("The cut at %@ is between keyframes — the video is re-encoded so the cut is exact (takes longer)",
+                                TimeFormat.string(seg.requestedStart)))
+            }
+            reencode = true
+            plan = CutPlan(removals: job.removals, duration: info.duration, keyframes: keyframes, precise: true)
+        }
         if plan.isCutting {
             guard !plan.segments.isEmpty else { throw ProcessingError.failed(L("The whole file is marked as removed")) }
             let removed = plan.removals.map { "\(TimeFormat.string($0.start))–\(TimeFormat.string($0.end))" }
-            log(.step, (job.preciseCut ? L("✂︎ Cutting away: %@ (frame-exact, re-encoding video)", removed.joined(separator: ", "))
-                                   : L("✂︎ Cutting away: %@ (at keyframes, no re-encoding)", removed.joined(separator: ", "))))
-            if !job.preciseCut {
-                for seg in plan.misalignedSegments {
-                    log(.warning, L("The cut at %@ is not on a keyframe — starts at %@ instead",
-                                       TimeFormat.string(seg.requestedStart), TimeFormat.string(seg.start)))
-                }
-            }
+            log(.step, (reencode ? L("✂︎ Cutting away: %@ (frame-exact, re-encoding video)", removed.joined(separator: ", "))
+                                 : L("✂︎ Cutting away: %@ (at keyframes, no re-encoding)", removed.joined(separator: ", "))))
             log(.info, L("New length: %@ (was %@)", TimeFormat.string(plan.outputDuration), TimeFormat.string(info.duration)))
         }
 
@@ -447,7 +456,7 @@ private final class Run: @unchecked Sendable {
         }
         a += ["-c", "copy"]
         var videoCodec = video.codec
-        if job.preciseCut && cutting {
+        if reencode && cutting {
             a += encoderArgs(video: video)
             videoCodec = video.codec == "hevc" ? "hevc" : "h264"
         }
@@ -482,16 +491,24 @@ private final class Run: @unchecked Sendable {
     func remuxWithFFmpeg(ffmpeg: URL, video: StreamInfo, audio: [StreamInfo], subs: [StreamInfo], plan: CutPlan,
                          outExt: String, to out: URL, range: ClosedRange<Double>) async throws {
         let base = streamArgs(video: video, audio: audio, subs: subs, outExt: outExt, cutting: plan.isCutting)
-        let eps = job.preciseCut ? 0 : 0.0005
+        let eps = reencode ? 0 : 0.0005
 
         func segmentArgs(_ seg: CutPlan.Segment, output: URL) -> [String] {
             var a = Self.common + Self.progressArgs
             var seek = 0.0
             if seg.requestedStart > 0.0005 {
                 seek = seg.requestedStart + eps
-                a += ["-ss", String(format: "%.6f", seek)]
+                if reencode {
+                    // Fast input seek to the keyframe before, then an exact output-side trim. This also trims the
+                    // copied audio, which would otherwise start at the keyframe (sound before the first picture).
+                    let kf = Cuts.keyframe(atOrBefore: seek, in: keyframes) ?? 0
+                    a += ["-ss", String(format: "%.6f", kf), "-i", input.path, "-ss", String(format: "%.6f", seek - kf)]
+                } else {
+                    a += ["-ss", String(format: "%.6f", seek), "-i", input.path]
+                }
+            } else {
+                a += ["-i", input.path]
             }
-            a += ["-i", input.path]
             if seg.end < info.duration - 0.01 { a += ["-t", String(format: "%.6f", seg.end - seek)] }
             return a + base + [output.path]
         }
@@ -539,7 +556,7 @@ private final class Run: @unchecked Sendable {
             if let t = s.title { join += ["-metadata:s:s:\(pos)", "title=\(t)"] }
         }
         if !audio.isEmpty { join += ["-disposition:a:0", "default"] }
-        let joinedCodec = job.preciseCut ? (video.codec == "hevc" ? "hevc" : "h264") : video.codec
+        let joinedCodec = reencode ? (video.codec == "hevc" ? "hevc" : "h264") : video.codec
         if Self.mp4Family.contains(outExt) && joinedCodec == "hevc" { join += ["-tag:v", "hvc1"] }
         join += ["-strict", "-2", out.path]
         let span = range.upperBound - range.lowerBound

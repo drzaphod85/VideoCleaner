@@ -169,6 +169,31 @@ import Testing
         #expect(abs(frCues[0].start - 3) < 0.01)
     }
 
+    @Test func cutBetweenKeyframesReencodes() async throws {
+        guard tools.hasFFmpeg else { return }
+        let dir = try tempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let src = try await makeSample(in: dir, ext: "mkv")
+        let info = try await Probe.mediaInfo(src, tools: tools)
+        let kfs = try await Probe.keyframes(src, info: info, tools: tools)
+        var options = ProcessingOptions()
+        options.extractSubtitles = true
+        // 2.5 s is between the keyframes at 2 and 3 → must re-encode and start exactly at 2.5
+        let job = ProcessingJob(input: src, info: info, keyframes: kfs,
+                                keepAudio: Set(info.audioStreams.map(\.index)),
+                                selectedSubtitles: [info.subtitleStreams[1].index],
+                                removals: [TimeRange(0, 2.5), TimeRange(10.5, 12.3)], options: options)
+        let log = LogBox()
+        let result = try await Processor(tools: tools).process(job, log: { log.add($0) }, progress: { _ in })
+        #expect(log.text.contains("re-encoded"), "\(log.text)")
+        let outInfo = try await Probe.mediaInfo(result.output, tools: tools)
+        #expect(abs(outInfo.duration - 15.7) < 0.1, "duration \(outInfo.duration)")
+        // picture and sound both start at the beginning
+        for s in outInfo.streams { #expect(s.startTime < 0.05, "\(s.kind) starts at \(s.startTime)") }
+        let cues = SRT.parse(try String(contentsOf: dir.appendingPathComponent("prov.en.srt"), encoding: .utf8))
+        #expect(abs(cues[0].start - 2.5) < 0.01)
+    }
+
     @Test func keepsFormatWithoutCut() async throws {
         guard tools.hasFFmpeg else { return }
         let dir = try tempDir()
