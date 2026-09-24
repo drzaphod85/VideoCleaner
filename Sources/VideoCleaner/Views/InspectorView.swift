@@ -8,7 +8,10 @@ struct InspectorView: View {
     @Environment(AppModel.self) private var model
     @State private var tab: Tab = .tracks
 
-    enum Tab: String, CaseIterable { case tracks = "Tracks", options = "Processing" }
+    enum Tab: String, CaseIterable {
+        case tracks = "Tracks"
+        case options = "Processing"
+    }
 
     var body: some View {
         VStack(spacing: 0) {

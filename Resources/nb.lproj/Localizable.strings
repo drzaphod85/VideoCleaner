@@ -192,6 +192,7 @@
 "Process Selected" = "Behandle valgte";
 "Process Selected (%lld)" = "Behandle valgte (%lld)";
 "Process this file with the cuts, tracks and settings shown (⌘↩)" = "Behandle filen med kuttene, sporene og innstillingene som vises (⌘↩)";
+"Processing" = "Behandling";
 "Processing in progress" = "Behandling pågår";
 "Processing… %lld of %lld done" = "Behandler… %lld av %lld ferdige";
 "Quit Anyway" = "Avslutt likevel";

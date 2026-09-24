@@ -89,11 +89,15 @@ struct TimelineView: View {
 
     var body: some View {
         VStack(spacing: 6) {
-            TimelineContent(item: item, state: state)
-                .frame(height: Self.totalHeight)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(ViewRefReader(ref: viewRef))
-                .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { state.width = max(1, $0) }
+            // The GeometryReader takes the width it is offered (and asks for none), so the timeline can never
+            // push the sidebar or inspector out of the window.
+            GeometryReader { g in
+                TimelineContent(item: item, state: state)
+                    .onAppear { state.width = max(1, g.size.width) }
+                    .onChange(of: g.size.width) { _, w in state.width = max(1, w) }
+            }
+            .frame(height: Self.totalHeight)
+            .background(ViewRefReader(ref: viewRef))
 
             OverviewBar(item: item, state: state)
                 .frame(height: 12)
@@ -311,17 +315,23 @@ private struct ThumbnailStrip: View {
     static let tileWidth: CGFloat = 104
 
     var body: some View {
-        let tileDuration = Double(Self.tileWidth) / state.pxPerSec
+        // Tile length is a power of two seconds (tiles 73–147 px wide), so tile times stay the same while the
+        // window is resized or zoomed a little — the cached pictures are reused instead of fetched again.
+        let raw = Double(Self.tileWidth) / state.pxPerSec
+        let tileDuration = pow(2, (log2(max(raw, 0.01))).rounded())
+        let tilePixels = CGFloat(tileDuration * state.pxPerSec)
         let first = max(0, Int((state.viewStart / tileDuration).rounded(.down)))
         let last = max(first, Int((min(state.duration, state.viewEnd) / tileDuration).rounded(.up)))
         let exact = tileDuration < 4
         ZStack(alignment: .topLeading) {
             Color.secondary.opacity(0.15)
             ForEach(first...last, id: \.self) { i in
-                ThumbTile(provider: provider, time: min(state.duration, (Double(i) + 0.5) * tileDuration), exact: exact)
+                ThumbTile(provider: provider, time: min(state.duration, (Double(i) + 0.5) * tileDuration), exact: exact,
+                          width: tilePixels)
                     .offset(x: state.x(Double(i) * tileDuration))
             }
         }
+        .frame(width: state.width, height: TimelineView.stripHeight, alignment: .topLeading)
     }
 }
 
@@ -329,6 +339,7 @@ private struct ThumbTile: View {
     let provider: ThumbnailProvider?
     let time: Double
     let exact: Bool
+    let width: CGFloat
     @State private var image: NSImage?
 
     var body: some View {
@@ -338,12 +349,15 @@ private struct ThumbTile: View {
                 Image(nsImage: image).resizable().aspectRatio(contentMode: .fill)
             }
         }
-        .frame(width: ThumbnailStrip.tileWidth, height: TimelineView.stripHeight)
+        .frame(width: width, height: TimelineView.stripHeight)
         .clipped()
         .overlay(alignment: .trailing) { Rectangle().fill(.black.opacity(0.25)).frame(width: 0.5) }
         .task(id: TaskKey(provider: provider.map(ObjectIdentifier.init), time: time, exact: exact)) {
-            image = provider?.cached(at: time, exact: exact)
-            if image == nil, let provider { image = await provider.image(at: time, exact: exact) }
+            if let cached = provider?.cached(at: time, exact: exact) {
+                image = cached
+            } else if let provider, let fetched = await provider.image(at: time, exact: exact) {
+                image = fetched
+            }
         }
     }
 

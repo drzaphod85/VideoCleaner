@@ -192,6 +192,7 @@
 "Process Selected" = "Bearbeta markerade";
 "Process Selected (%lld)" = "Bearbeta markerade (%lld)";
 "Process this file with the cuts, tracks and settings shown (⌘↩)" = "Bearbeta filen med de klipp, spår och inställningar som visas (⌘↩)";
+"Processing" = "Bearbetning";
 "Processing in progress" = "Bearbetning pågår";
 "Processing… %lld of %lld done" = "Bearbetar… %lld av %lld klara";
 "Quit Anyway" = "Avsluta ändå";

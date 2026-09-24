@@ -166,11 +166,22 @@ struct AVPlayerViewRepresentable: NSViewRepresentable {
         v.videoGravity = .resizeAspect
         v.player = player
         v.allowsPictureInPicturePlayback = false
+        v.allowsVideoFrameAnalysis = false  // no Live Text button over the video
+        for o in [NSLayoutConstraint.Orientation.horizontal, .vertical] {
+            v.setContentCompressionResistancePriority(.defaultLow, for: o)
+            v.setContentHuggingPriority(.defaultLow, for: o)
+        }
         return v
     }
 
     func updateNSView(_ nsView: AVPlayerView, context: Context) {
         if nsView.player !== player { nsView.player = player }
+    }
+
+    /// Take whatever space is offered. By default AVPlayerView asks for the video's own pixel size, which for
+    /// 4K and ultra-wide files pushes the sidebar and inspector out of the window.
+    func sizeThatFits(_ proposal: ProposedViewSize, nsView: AVPlayerView, context: Context) -> CGSize? {
+        CGSize(width: proposal.width ?? 640, height: proposal.height ?? 360)
     }
 }
 
@@ -292,22 +303,29 @@ struct TransportBar: View {
 
             Spacer()
 
-            Toggle(isOn: $model.skipRemovedWhilePlaying) {
-                Label("Skip removed", systemImage: "arrowshape.bounce.right")
+            ViewThatFits(in: .horizontal) {
+                toggles.labelStyle(.titleAndIcon)
+                toggles.labelStyle(.iconOnly)
             }
-            .toggleStyle(.button)
-            .labelStyle(.titleAndIcon)
-            .help("Preview the result: playback jumps over the parts that are removed")
-
-            Toggle(isOn: $model.snapToKeyframes) {
-                Label("Snap to keyframes", systemImage: "arrow.right.and.line.vertical.and.arrow.left")
-            }
-            .toggleStyle(.button)
-            .labelStyle(.titleAndIcon)
-            .help("Cuts where a kept part starts are placed on the nearest keyframe — then the video does not need re-encoding")
         }
         .labelStyle(.iconOnly)
         .controlSize(.regular)
+    }
+
+    private var toggles: some View {
+        @Bindable var model = model
+        return HStack(spacing: 8) {
+            Toggle(isOn: $model.skipRemovedWhilePlaying) {
+                Label("Skip removed", systemImage: "arrowshape.bounce.right")
+            }
+            .help("Preview the result: playback jumps over the parts that are removed")
+            Toggle(isOn: $model.snapToKeyframes) {
+                Label("Snap to keyframes", systemImage: "arrow.right.and.line.vertical.and.arrow.left")
+            }
+            .help("Cuts where a kept part starts are placed on the nearest keyframe — then the video does not need re-encoding")
+        }
+        .toggleStyle(.button)
+        .fixedSize()
     }
 
     private func transportButton(_ icon: String, _ help: String, action: @escaping () -> Void) -> some View {

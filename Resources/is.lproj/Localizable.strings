@@ -192,6 +192,7 @@
 "Process Selected" = "Vinna valdar";
 "Process Selected (%lld)" = "Vinna valdar (%lld)";
 "Process this file with the cuts, tracks and settings shown (⌘↩)" = "Vinna skrána með klippingum, rásum og stillingum sem sýndar eru (⌘↩)";
+"Processing" = "Vinnsla";
 "Processing in progress" = "Vinnsla í gangi";
 "Processing… %lld of %lld done" = "Vinn… %lld af %lld tilbúnar";
 "Quit Anyway" = "Hætta samt";

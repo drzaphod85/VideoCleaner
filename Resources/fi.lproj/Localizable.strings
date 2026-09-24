@@ -192,6 +192,7 @@
 "Process Selected" = "Käsittele valitut";
 "Process Selected (%lld)" = "Käsittele valitut (%lld)";
 "Process this file with the cuts, tracks and settings shown (⌘↩)" = "Käsittele tiedosto näytetyillä leikkauksilla, raidoilla ja asetuksilla (⌘↩)";
+"Processing" = "Käsittely";
 "Processing in progress" = "Käsittely on käynnissä";
 "Processing… %lld of %lld done" = "Käsitellään… %lld/%lld valmiina";
 "Quit Anyway" = "Lopeta silti";
