@@ -367,6 +367,8 @@ struct SettingsView: View {
                 }
             }
             Section("About") {
+                Text("Cleans up and trims video files for Plex and Jellyfin media servers.")
+                    .foregroundStyle(.secondary)
                 LabeledContent("License", value: L("GNU GPL v3.0 or later"))
                 Link(destination: URL(string: "https://github.com/drzaphod85/VideoCleaner")!) { Text(verbatim: "github.com/drzaphod85/VideoCleaner") }
             }

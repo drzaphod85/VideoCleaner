@@ -40,9 +40,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         PreviewService.shared.clearCache()
     }
 
+    /// Files or folders dropped on the Dock icon, opened with "Open With", or passed to `open -a`.
     func application(_ application: NSApplication, open urls: [URL]) {
         MainActor.assumeIsolated {
             if let model { model.add(urls: urls) } else { pending += urls }
+            NSApp.activate()
+            NSApp.windows.first { $0.isVisible && $0.canBecomeMain }?.makeKeyAndOrderFront(nil)
         }
     }
 

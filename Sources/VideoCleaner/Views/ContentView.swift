@@ -109,6 +109,13 @@ struct EmptyStateView: View {
 
     var body: some View {
         VStack(spacing: 22) {
+            VStack(spacing: 4) {
+                Text("Get your movies and TV episodes ready for Plex and Jellyfin")
+                    .font(.title3.weight(.semibold))
+                Text("Trim, clean up subtitles and audio tracks, and fix languages — mostly without re-encoding.")
+                    .foregroundStyle(.secondary)
+            }
+            .multilineTextAlignment(.center)
             ZStack {
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
                     .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [10, 8]))
@@ -119,7 +126,7 @@ struct EmptyStateView: View {
                         .foregroundStyle(.tint)
                     Text("Drop video files or folders here")
                         .font(.title2.weight(.semibold))
-                    Text("MKV, MP4, M4V and MOV — single files, a folder or a folder with many subfolders.")
+                    Text("MKV, MP4, M4V and MOV — single files, a folder or a folder with many subfolders. You can also drop them on the app icon.")
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: 380)

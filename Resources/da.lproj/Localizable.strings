@@ -48,6 +48,7 @@
 "Choose Folder…" = "Vælg mappe…";
 "Choose the folder where cleaned files and subtitles are saved" = "Vælg mappen hvor de rensede filer og undertekster gemmes";
 "Cleaned and re-timed" = "Rensede og tidsjusterede";
+"Cleans up and trims video files for Plex and Jellyfin media servers." = "Renser og klipper videofiler til medieserverne Plex og Jellyfin.";
 "Clear Cuts" = "Ryd klip";
 "Clear List" = "Tøm listen";
 "Click or drag here to jump to the nearest keyframe" = "Klik eller træk her for at hoppe til nærmeste keyframe";
@@ -102,6 +103,7 @@
 "Format" = "Format";
 "Format .%@ → converting (remux) to .mkv" = "Format .%@ → konverterer (remux) til .mkv";
 "Full processing: subtitles, audio tracks, cutting and languages." = "Fuld behandling: undertekster, lydspor, klipning og sprog.";
+"Get your movies and TV episodes ready for Plex and Jellyfin" = "Gør film og tv-afsnit klar til Plex og Jellyfin";
 "GNU GPL v3.0 or later" = "GNU GPL v3.0 eller nyere";
 "Go to End" = "Gå til slutningen";
 "Go to Start" = "Gå til starten";
@@ -133,7 +135,7 @@
 "Mark the start of a middle part to remove ( I )" = "Markér starten på en del i midten, der skal fjernes ( I )";
 "MKV file → using mkvtoolnix" = "MKV-fil → bruger mkvtoolnix";
 "MKV files are copied (without re-encoding) to a temporary MP4 so they can be shown. The cache is emptied when the app quits." = "MKV-filer kopieres (uden omkodning) til en midlertidig MP4, så de kan vises. Cachen tømmes, når appen afsluttes.";
-"MKV, MP4, M4V and MOV — single files, a folder or a folder with many subfolders." = "MKV, MP4, M4V og MOV — enkelte filer, en mappe eller en mappe med mange undermapper.";
+"MKV, MP4, M4V and MOV — single files, a folder or a folder with many subfolders. You can also drop them on the app icon." = "MKV, MP4, M4V og MOV — enkelte filer, en mappe eller en mappe med mange undermapper. Du kan også slippe dem på appikonet.";
 "mkvextract failed — using ffmpeg for those tracks" = "mkvextract mislykkedes — bruger ffmpeg til de spor";
 "mkvmerge failed: %@" = "mkvmerge mislykkedes: %@";
 "mkvmerge reported warnings (continuing)" = "mkvmerge gav advarsler (fortsætter)";
@@ -270,6 +272,7 @@
 "Tools (leave empty to search automatically)" = "Værktøjer (lad stå tomt for automatisk søgning)";
 "Tracks" = "Spor";
 "Tracks and cuts are chosen per file. The settings on the right apply to all files." = "Spor og klip vælges pr. fil. Indstillingerne til højre gælder alle filer.";
+"Trim, clean up subtitles and audio tracks, and fix languages — mostly without re-encoding." = "Klip, ryd op i undertekster og lydspor, og ret sprog — oftest uden omkodning.";
 "Undo This Cut" = "Fortryd dette klip";
 "Undo this cut" = "Fortryd dette klip";
 "Unknown (und)" = "Ukendt (und)";

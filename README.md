@@ -1,6 +1,6 @@
 # VideoCleaner
 
-A native macOS app (Swift + SwiftUI) for cleaning up MKV and MP4 files **without re-encoding**:
+**Get your movies and TV episodes ready for Plex and Jellyfin.** VideoCleaner is a native macOS app (Swift + SwiftUI) that cleans up and trims MKV and MP4 files — mostly **without re-encoding** — so your media server plays them the way you want:
 
 - ✂️ **Cut** — remove the beginning, the end, or any number of parts in the middle, right in a video preview with a zoomable timeline.
   Cuts on **keyframes** only remux the file (no re-encoding). You can also cut anywhere: a cut between keyframes is made frame-exact by re-encoding the video with VideoToolbox, with a clear warning and a one-click "Move Cuts to Keyframes" to avoid it.
@@ -8,8 +8,17 @@ A native macOS app (Swift + SwiftUI) for cleaning up MKV and MP4 files **without
 - 🔊 **Audio tracks** — remove tracks by language (e.g. `de, ru`) or one by one. At least one track is always kept.
 - 🏷️ **Languages** — set or fix track languages (tracks tagged `und` are highlighted). A "language tags only" mode changes MKV files in place in seconds.
 - 📦 **Container** — convert to MKV with one checkbox, or keep the original format.
-- 🗂️ **Batch** — open single files, several files, a folder, or a folder full of subfolders (drag and drop works too). Every file gets its own cuts and track choices; the rules in the sidebar apply to all of them.
+- 🗂️ **Batch** — open single files, several files, a folder, or a folder full of subfolders — drag them onto the window or the app icon in the Dock. Every file gets its own cuts and track choices; the rules in the sidebar apply to all of them.
 - 🧪 **Dry run** — "Show Commands" lists exactly which `ffmpeg`/`mkvmerge` commands would run.
+
+### Made for Plex and Jellyfin
+
+- **Subtitles as sidecar files** — `Movie.sv.srt`, `Movie.en.forced.srt` and `Movie.en.sdh.srt` follow the naming Plex, Jellyfin, Emby and Infuse look for, so the right language and flags show up in the player. Plain SRT next to the video also avoids the subtitle "burn-in" transcoding that image and styled subtitles (PGS, ASS) often trigger on TVs and streaming boxes.
+- **Correct language tags** — the server picks the default audio and subtitle track by language; tracks tagged `und` are flagged so you can fix them.
+- **Only the audio you need** — dropping dubs you never use makes files smaller and keeps the audio menu tidy.
+- **Clean titles** — the container title is removed so the server shows its own metadata instead of a release name.
+- **MKV everywhere** — one container that holds every codec and track type the servers support.
+- **Trim intros, recaps, ads and trailers** without re-encoding, so quality stays untouched and processing takes seconds.
 
 The app started as a port of a Bash script (`clean_and_extract_subs.sh`) and keeps its safety rules: work happens in temporary files, the original is only replaced when the new file is complete and non-empty, files that are still being downloaded are skipped, and converted originals go to the Trash (not deleted).
 

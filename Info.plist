@@ -34,10 +34,28 @@
 			</array>
 		</dict>
 		<dict>
+			<!-- Lets folders be dropped on the Dock icon or opened with "Open With" (rank Alternate:
+			     VideoCleaner never becomes the default app for folders). -->
 			<key>CFBundleTypeName</key><string>Folder</string>
 			<key>CFBundleTypeRole</key><string>Viewer</string>
-			<key>LSHandlerRank</key><string>None</string>
+			<key>LSHandlerRank</key><string>Alternate</string>
 			<key>LSItemContentTypes</key><array><string>public.folder</string></array>
+		</dict>
+	</array>
+	<!-- macOS has no built-in type for Matroska; declare it so .mkv files are recognised even when no
+	     other app (VLC, IINA…) has registered it. Imported: if another app already declares it, theirs wins. -->
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key><string>org.matroska.mkv</string>
+			<key>UTTypeDescription</key><string>Matroska video</string>
+			<key>UTTypeConformsTo</key>
+			<array><string>public.movie</string></array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key><array><string>mkv</string></array>
+				<key>public.mime-type</key><array><string>video/x-matroska</string></array>
+			</dict>
 		</dict>
 	</array>
 </dict>

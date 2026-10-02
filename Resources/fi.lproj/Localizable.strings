@@ -48,6 +48,7 @@
 "Choose Folder…" = "Valitse kansio…";
 "Choose the folder where cleaned files and subtitles are saved" = "Valitse kansio, johon puhdistetut tiedostot ja tekstitykset tallennetaan";
 "Cleaned and re-timed" = "Puhdistettu ja ajastettu";
+"Cleans up and trims video files for Plex and Jellyfin media servers." = "Siivoaa ja leikkaa videotiedostoja Plex- ja Jellyfin-mediapalvelimille.";
 "Clear Cuts" = "Tyhjennä leikkaukset";
 "Clear List" = "Tyhjennä luettelo";
 "Click or drag here to jump to the nearest keyframe" = "Napsauta tai vedä tästä siirtyäksesi lähimpään avainkuvaan";
@@ -102,6 +103,7 @@
 "Format" = "Muoto";
 "Format .%@ → converting (remux) to .mkv" = "Muoto .%@ → muunnetaan (remux) .mkv:ksi";
 "Full processing: subtitles, audio tracks, cutting and languages." = "Täysi käsittely: tekstitykset, ääniraidat, leikkaus ja kielet.";
+"Get your movies and TV episodes ready for Plex and Jellyfin" = "Valmistele elokuvat ja tv-jaksot Plexiin ja Jellyfiniin";
 "GNU GPL v3.0 or later" = "GNU GPL v3.0 tai uudempi";
 "Go to End" = "Siirry loppuun";
 "Go to Start" = "Siirry alkuun";
@@ -133,7 +135,7 @@
 "Mark the start of a middle part to remove ( I )" = "Merkitse poistettavan keskiosan alku ( I )";
 "MKV file → using mkvtoolnix" = "MKV-tiedosto → käytetään mkvtoolnixia";
 "MKV files are copied (without re-encoding) to a temporary MP4 so they can be shown. The cache is emptied when the app quits." = "MKV-tiedostot kopioidaan (ilman uudelleenkoodausta) väliaikaiseksi MP4:ksi, jotta ne voidaan näyttää. Välimuisti tyhjennetään, kun appi suljetaan.";
-"MKV, MP4, M4V and MOV — single files, a folder or a folder with many subfolders." = "MKV, MP4, M4V ja MOV — yksittäisiä tiedostoja, kansio tai kansio, jossa on monta alikansiota.";
+"MKV, MP4, M4V and MOV — single files, a folder or a folder with many subfolders. You can also drop them on the app icon." = "MKV, MP4, M4V ja MOV — yksittäisiä tiedostoja, kansio tai kansio, jossa on monta alikansiota. Voit myös pudottaa ne apin kuvakkeen päälle.";
 "mkvextract failed — using ffmpeg for those tracks" = "mkvextract epäonnistui — käytetään ffmpegiä näille raidoille";
 "mkvmerge failed: %@" = "mkvmerge epäonnistui: %@";
 "mkvmerge reported warnings (continuing)" = "mkvmerge antoi varoituksia (jatketaan)";
@@ -270,6 +272,7 @@
 "Tools (leave empty to search automatically)" = "Työkalut (jätä tyhjäksi automaattista hakua varten)";
 "Tracks" = "Raidat";
 "Tracks and cuts are chosen per file. The settings on the right apply to all files." = "Raidat ja leikkaukset valitaan tiedostokohtaisesti. Oikean puolen asetukset koskevat kaikkia tiedostoja.";
+"Trim, clean up subtitles and audio tracks, and fix languages — mostly without re-encoding." = "Leikkaa, siivoa tekstitykset ja ääniraidat ja korjaa kielet — useimmiten ilman uudelleenkoodausta.";
 "Undo This Cut" = "Peru tämä leikkaus";
 "Undo this cut" = "Peru tämä leikkaus";
 "Unknown (und)" = "Tuntematon (und)";
