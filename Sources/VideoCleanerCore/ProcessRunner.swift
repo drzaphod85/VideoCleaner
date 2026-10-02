@@ -18,11 +18,20 @@ final class LineCollector: @unchecked Sendable {
     private var buffer = Data()
     private var all = Data()
     private let onLine: (@Sendable (String) -> Void)?
+    private let onData: (@Sendable (Data) -> Void)?
+    private let keep: Bool
 
-    init(onLine: (@Sendable (String) -> Void)?) { self.onLine = onLine }
+    init(onLine: (@Sendable (String) -> Void)?, onData: (@Sendable (Data) -> Void)? = nil, keep: Bool = true) {
+        self.onLine = onLine; self.onData = onData; self.keep = keep
+    }
 
     func append(_ data: Data) {
         guard !data.isEmpty else { return }
+        if let onData {
+            // Raw consumers (e.g. decoded audio) get every byte in order; the lock keeps chunks serialized
+            lock.lock(); onData(data); lock.unlock()
+            if !keep { return }
+        }
         var lines: [String] = []
         lock.lock()
         all.append(data)
@@ -77,9 +86,13 @@ private final class ProcessState: @unchecked Sendable {
 
 public enum ProcessRunner {
     /// Runs an external tool. Cancelling the calling task terminates the process and throws `CancellationError`.
+    /// `onStdoutData` receives raw stdout bytes as they arrive (for large binary output such as decoded audio);
+    /// set `keepStdout` to false to not also collect them in memory.
     public static func run(_ executable: URL, _ arguments: [String],
                            onStdoutLine: (@Sendable (String) -> Void)? = nil,
-                           onStderrLine: (@Sendable (String) -> Void)? = nil) async throws -> CommandResult {
+                           onStderrLine: (@Sendable (String) -> Void)? = nil,
+                           onStdoutData: (@Sendable (Data) -> Void)? = nil,
+                           keepStdout: Bool = true) async throws -> CommandResult {
         let process = Process()
         process.executableURL = executable
         process.arguments = arguments
@@ -87,7 +100,7 @@ public enum ProcessRunner {
         let outPipe = Pipe(), errPipe = Pipe()
         process.standardOutput = outPipe
         process.standardError = errPipe
-        let out = LineCollector(onLine: onStdoutLine)
+        let out = LineCollector(onLine: onStdoutLine, onData: onStdoutData, keep: keepStdout)
         let err = LineCollector(onLine: onStderrLine)
         let state = ProcessState(process)
 

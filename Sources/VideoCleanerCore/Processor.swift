@@ -40,14 +40,16 @@ public struct ProcessingJob: Sendable {
     /// Always re-encode the video when cutting. Without it the video is only re-encoded when a kept part
     /// starts between keyframes (then automatically, so every cut lands exactly where it was placed).
     public var preciseCut: Bool
+    /// Audio tracks from other files to add (after the file's own audio tracks).
+    public var addedAudio: [AddedAudio]
     public var options: ProcessingOptions
 
     public init(input: URL, info: MediaInfo, keyframes: [Double] = [], keepAudio: Set<Int>,
                 selectedSubtitles: Set<Int>, languages: [Int: String] = [:], removals: [TimeRange] = [],
-                preciseCut: Bool = false, options: ProcessingOptions = ProcessingOptions()) {
+                preciseCut: Bool = false, addedAudio: [AddedAudio] = [], options: ProcessingOptions = ProcessingOptions()) {
         self.input = input; self.info = info; self.keyframes = keyframes; self.keepAudio = keepAudio
         self.selectedSubtitles = selectedSubtitles; self.languages = languages; self.removals = removals
-        self.preciseCut = preciseCut; self.options = options
+        self.preciseCut = preciseCut; self.addedAudio = addedAudio; self.options = options
     }
 }
 
@@ -211,33 +213,46 @@ private final class Run: @unchecked Sendable {
             log(.info, L("New length: %@ (was %@)", TimeFormat.string(plan.outputDuration), TimeFormat.string(info.duration)))
         }
 
-        // 1) Subtitles → .srt
         var result = ProcessingResult(output: outURL)
         let textSubs = opts.extractSubtitles
             ? info.subtitleStreams.filter { job.selectedSubtitles.contains($0.index) }
             : []
-        for s in textSubs where !s.isTextSubtitle {
-            log(.info, L("Skipping s%lld (image-based %@, cannot become .srt)", s.ordinal + 1, s.codec))
-        }
         let extractable = textSubs.filter(\.isTextSubtitle)
-        let remuxRange: ClosedRange<Double> = extractable.isEmpty ? 0...1 : 0.1...1
-        if !extractable.isEmpty {
-            result.subtitleFiles = try await extractSubtitles(extractable, plan: plan, outDir: outDir, ffmpeg: ffmpeg)
-        }
-        progressHandler(remuxRange.lowerBound)
+        let added = job.addedAudio
+        let remuxRange: ClosedRange<Double> = 0...(added.isEmpty ? (extractable.isEmpty ? 1 : 0.9) : 0.55)
 
-        // 2) Clean copy
+        // 1) Clean copy (first, so that subtitles and added audio can follow where the cuts really landed)
         let tmp = outDir.appendingPathComponent(".\(stem).videocleaner-\(UUID().uuidString.prefix(8)).\(outExt)")
         tempItems.append(tmp)
         log(.step, keptSubs.isEmpty ? L("Creating clean copy without subtitles → %@", outURL.lastPathComponent)
                                   : L("Creating clean copy → %@", outURL.lastPathComponent))
 
-        let useMKVMerge = useMKVToolNix && outIsMKV && !plan.isCutting
+        let useMKVMerge = useMKVToolNix && outIsMKV && !plan.isCutting && added.isEmpty
         if useMKVMerge {
             try await remuxWithMKVMerge(video: video, audio: audio, subs: keptSubs, to: tmp, range: remuxRange)
         } else {
-            try await remuxWithFFmpeg(ffmpeg: ffmpeg, video: video, audio: audio, subs: keptSubs, plan: plan,
-                                      outExt: outExt, to: tmp, range: remuxRange)
+            let starts = try await remuxWithFFmpeg(ffmpeg: ffmpeg, video: video, audio: audio, subs: keptSubs, plan: plan,
+                                                   outExt: outExt, to: tmp, range: remuxRange)
+            plan = plan.withMeasuredStarts(starts)
+        }
+
+        // 2) Subtitles → .srt, re-timed to the finished file
+        for s in textSubs where !s.isTextSubtitle {
+            log(.info, L("Skipping s%lld (image-based %@, cannot become .srt)", s.ordinal + 1, s.codec))
+        }
+        if !extractable.isEmpty {
+            result.subtitleFiles = try await extractSubtitles(extractable, plan: plan, outDir: outDir, ffmpeg: ffmpeg)
+        }
+        progressHandler(remuxRange.upperBound)
+
+        // 3) Audio tracks from other files
+        var finalTmp = tmp
+        if !added.isEmpty {
+            let withAudio = outDir.appendingPathComponent(".\(stem).videocleaner-\(UUID().uuidString.prefix(8)).\(outExt)")
+            tempItems.append(withAudio)
+            try await addAudioTracks(added, to: tmp, output: withAudio, keptAudio: audio, plan: plan, outExt: outExt,
+                                     ffmpeg: ffmpeg, range: 0.55...1)
+            finalTmp = withAudio
         }
 
         if dryRun {
@@ -247,20 +262,20 @@ private final class Run: @unchecked Sendable {
             return result
         }
 
-        // 3) Put the result in place
-        let size = (try? fm.attributesOfItem(atPath: tmp.path)[.size] as? Int64) ?? 0
+        // 4) Put the result in place
+        let size = (try? fm.attributesOfItem(atPath: finalTmp.path)[.size] as? Int64) ?? 0
         guard size > 0 else { throw ProcessingError.failed(L("The result file is empty — the original is untouched")) }
         if sameFile {
             do {
-                _ = try fm.replaceItemAt(outURL, withItemAt: tmp)
+                _ = try fm.replaceItemAt(outURL, withItemAt: finalTmp)
             } catch {
                 try fm.removeItem(at: outURL)
-                try fm.moveItem(at: tmp, to: outURL)
+                try fm.moveItem(at: finalTmp, to: outURL)
             }
         } else {
-            try fm.moveItem(at: tmp, to: outURL)
+            try fm.moveItem(at: finalTmp, to: outURL)
         }
-        tempItems.removeAll { $0 == tmp }
+        tempItems.removeAll { $0 == finalTmp }
 
         if converting && opts.trashOriginalAfterConversion && !sameFile {
             do {
@@ -488,8 +503,10 @@ private final class Run: @unchecked Sendable {
         return a
     }
 
+    /// Returns, per kept part, the source time at which the finished file begins that part (see CutPlan.withMeasuredStarts).
+    @discardableResult
     func remuxWithFFmpeg(ffmpeg: URL, video: StreamInfo, audio: [StreamInfo], subs: [StreamInfo], plan: CutPlan,
-                         outExt: String, to out: URL, range: ClosedRange<Double>) async throws {
+                         outExt: String, to out: URL, range: ClosedRange<Double>) async throws -> [Double] {
         let base = streamArgs(video: video, audio: audio, subs: subs, outExt: outExt, cutting: plan.isCutting)
         let eps = reencode ? 0 : 0.0005
 
@@ -504,6 +521,10 @@ private final class Run: @unchecked Sendable {
                     let kf = Cuts.keyframe(atOrBefore: seek, in: keyframes) ?? 0
                     a += ["-ss", String(format: "%.6f", kf), "-i", input.path, "-ss", String(format: "%.6f", seek - kf)]
                 } else {
+                    // Seek a little past the keyframe (but before the next one): with B-frames, ffmpeg's Matroska
+                    // seek otherwise lands one keyframe too early when the target is exactly on a keyframe.
+                    let next = Cuts.nextKeyframe(after: seg.start, in: keyframes) ?? info.duration
+                    seek = seg.start + min(0.5, max(0.0005, (next - seg.start) * 0.4))
                     a += ["-ss", String(format: "%.6f", seek), "-i", input.path]
                 }
             } else {
@@ -517,7 +538,8 @@ private final class Run: @unchecked Sendable {
             let seg = plan.segments.first ?? CutPlan.Segment(requestedStart: 0, start: 0, end: info.duration)
             let r = try await exec(ffmpeg, segmentArgs(seg, output: out), range: range, expected: seg.length)
             guard r.status == 0 else { throw ProcessingError.failed(L("Remux failed: %@", r.stderr.trimmed)) }
-            return
+            guard plan.isCutting else { return [seg.start] }
+            return [try await measuredStart(of: seg, in: out)]
         }
 
         // Several kept parts: write each one, then join them without re-encoding
@@ -529,6 +551,7 @@ private final class Run: @unchecked Sendable {
         let joinShare = 0.08
         var done = 0.0
         var parts: [URL] = []
+        var starts: [Double] = []
         for (i, seg) in plan.segments.enumerated() {
             let part = work.appendingPathComponent("part\(i + 1).\(outExt)")
             log(.info, L("Part %lld/%lld: %@–%@", i + 1, plan.segments.count, TimeFormat.string(seg.start), TimeFormat.string(seg.end)))
@@ -538,6 +561,7 @@ private final class Run: @unchecked Sendable {
             let r = try await exec(ffmpeg, segmentArgs(seg, output: part), range: lo...hi, expected: seg.length)
             guard r.status == 0 else { throw ProcessingError.failed(L("Cutting part %lld failed: %@", i + 1, r.stderr.trimmed)) }
             parts.append(part)
+            starts.append(try await measuredStart(of: seg, in: part))
             done += seg.length
         }
 
@@ -562,7 +586,142 @@ private final class Run: @unchecked Sendable {
         let span = range.upperBound - range.lowerBound
         let r = try await exec(ffmpeg, join, range: (range.upperBound - span * joinShare)...range.upperBound, expected: total)
         guard r.status == 0 else { throw ProcessingError.failed(L("Joining failed: %@", r.stderr.trimmed)) }
+        return starts
     }
+
+    /// The source time at which a cut file really begins: its first picture shows the part's first frame
+    /// (seg.start, or the requested start when re-encoding) at the file's video start time.
+    func measuredStart(of seg: CutPlan.Segment, in file: URL) async throws -> Double {
+        let first = reencode ? seg.requestedStart : seg.start
+        guard !dryRun, let ffprobe = tools.ffprobe else { return first }
+        let r = try await ProcessRunner.run(ffprobe, ["-v", "error", "-select_streams", "v:0",
+                                                      "-show_entries", "stream=start_time", "-of", "csv=p=0", file.path])
+        let videoStart = Double(r.stdout.trimmed) ?? 0
+        return first - videoStart
+    }
+
+    // MARK: - Added audio tracks
+
+    static let mp4AudioCodecs: Set<String> = ["aac", "ac3", "eac3", "mp3", "alac"]
+
+    /// Each added track is first prepared on the finished film's timeline, then all of them are added to the
+    /// finished file in one pass that keeps every timestamp as it is (-copyts).
+    func addAudioTracks(_ tracks: [AddedAudio], to file: URL, output: URL, keptAudio: [StreamInfo], plan: CutPlan,
+                        outExt: String, ffmpeg: URL, range: ClosedRange<Double>) async throws {
+        let work = fm.temporaryDirectory.appendingPathComponent("VideoCleaner-audio-\(UUID().uuidString)", isDirectory: true)
+        if !dryRun { try fm.createDirectory(at: work, withIntermediateDirectories: true) }
+        tempItems.append(work)
+        let span = range.upperBound - range.lowerBound
+        var inputs: [(url: URL, offset: Double)] = []
+        for (i, track) in tracks.enumerated() {
+            let prepared = work.appendingPathComponent("added\(i + 1).mka")
+            let lo = range.lowerBound + span * 0.85 * Double(i) / Double(tracks.count)
+            let hi = range.lowerBound + span * 0.85 * Double(i + 1) / Double(tracks.count)
+            let offset = try await prepare(track, number: i + 1, to: prepared, plan: plan, outExt: outExt,
+                                           ffmpeg: ffmpeg, range: lo...hi)
+            inputs.append((prepared, offset))
+        }
+
+        var args = Self.common + Self.progressArgs + ["-copyts", "-i", file.path]
+        for input in inputs {
+            if input.offset > 0.0005 { args += ["-itsoffset", String(format: "%.6f", input.offset)] }
+            args += ["-i", input.url.path]
+        }
+        args += ["-map", "0"]
+        for i in tracks.indices { args += ["-map", "\(i + 1):a:0"] }
+        args += ["-c", "copy"]
+        let anyDefault = tracks.contains(where: \.isDefault)
+        if anyDefault {
+            for pos in keptAudio.indices { args += ["-disposition:a:\(pos)", "0"] }
+        }
+        for (i, track) in tracks.enumerated() {
+            let pos = keptAudio.count + i
+            args += ["-metadata:s:a:\(pos)", "language=\(Languages.normalized3(track.language))"]
+            if !track.title.isEmpty { args += ["-metadata:s:a:\(pos)", "title=\(track.title)"] }
+            args += ["-disposition:a:\(pos)", track.isDefault ? "default" : "0"]
+        }
+        // The finished file's video is HEVC if the source was (re-encoding keeps HEVC as HEVC)
+        if Self.mp4Family.contains(outExt) && info.primaryVideo?.codec == "hevc" { args += ["-tag:v", "hvc1"] }
+        args += ["-strict", "-2", "-max_muxing_queue_size", "9999", output.path]
+        log(.step, L("Adding %lld audio tracks", tracks.count))
+        let total = plan.isCutting ? plan.outputDuration : info.duration
+        let r = try await exec(ffmpeg, args, range: (range.lowerBound + span * 0.85)...range.upperBound, expected: total)
+        guard r.status == 0 else { throw ProcessingError.failed(L("Adding audio tracks failed: %@", r.stderr.trimmed)) }
+    }
+
+    /// Writes the track on the finished film's timeline. Returns how far into the film it starts (seconds),
+    /// which is applied with -itsoffset when it is added.
+    func prepare(_ t: AddedAudio, number: Int, to out: URL, plan: CutPlan, outExt: String, ffmpeg: URL,
+                 range: ClosedRange<Double>) async throws -> Double {
+        let placement = t.movieTime(ofSource: t.trimStart)     // movie time where the kept sound starts
+        let mp4OK = !Self.mp4Family.contains(outExt) || Self.mp4AudioCodecs.contains(t.codec)
+        let canCopy = !plan.isCutting && !t.isStretched && placement >= 0 && mp4OK
+        let lang = Languages.displayName(t.language)
+        var args = Self.common + Self.progressArgs
+        let duration: Double
+        if canCopy {
+            // Lossless: copy the packets, only shift them in time
+            log(.step, L("Audio track %lld (%@): copied, starts at %@", number, lang, TimeFormat.string(placement)))
+            if t.trimStart > 0.0005 { args += ["-ss", String(format: "%.6f", t.trimStart)] }
+            if let end = t.trimEnd { args += ["-to", String(format: "%.6f", end)] }
+            args += ["-i", t.source.path, "-map", "0:\(t.streamIndex)", "-vn", "-sn", "-dn", "-c:a", "copy",
+                     "-f", "matroska", out.path]
+            duration = (t.trimEnd ?? t.sourceDuration) - t.trimStart
+            let r = try await exec(ffmpeg, args, range: range, expected: duration)
+            guard r.status == 0 else { throw ProcessingError.failed(L("Preparing audio track %lld failed: %@", number, r.stderr.trimmed)) }
+            return placement
+        }
+
+        // Sample-exact: trim, correct the speed, place on the film's timeline and apply the cuts, then encode
+        let sr = t.sampleRate
+        var chain = ["atrim=start=\(fmt(t.trimStart))" + (t.trimEnd.map { ":end=\(fmt($0))" } ?? ""), "asetpts=PTS-STARTPTS"]
+        if t.isStretched {
+            chain += ["asetrate=\(Int((Double(sr) / t.stretch).rounded()))", "aresample=\(sr)"]
+        }
+        if placement > 0.0005 {
+            chain.append("adelay=delays=\(Int((placement * Double(sr)).rounded()))S:all=1")
+        } else if placement < -0.0005 {
+            chain += ["atrim=start=\(fmt(-placement))", "asetpts=PTS-STARTPTS"]
+        }
+        chain += ["apad=whole_dur=\(fmt(info.duration))", "atrim=end=\(fmt(info.duration))"]
+        var graph = "[0:\(t.streamIndex)]" + chain.joined(separator: ",")
+        if plan.isCutting {
+            let n = plan.segments.count
+            graph += ",asplit=\(n)" + (0..<n).map { "[s\($0)]" }.joined() + ";"
+            for (i, seg) in plan.segments.enumerated() {
+                graph += "[s\(i)]atrim=start=\(fmt(seg.start)):end=\(fmt(seg.end)),asetpts=PTS-STARTPTS[c\(i)];"
+            }
+            graph += (0..<n).map { "[c\($0)]" }.joined() + "concat=n=\(n):v=0:a=1[out]"
+        } else {
+            graph += "[out]"
+        }
+        let encoder = audioEncoder(for: t, outExt: outExt)
+        var why: [String] = []
+        if plan.isCutting { why.append(L("cut")) }
+        if t.isStretched { why.append(L("speed corrected")) }
+        if !mp4OK { why.append(L("format")) }
+        if placement < 0 && why.isEmpty { why.append(L("starts before the film")) }
+        log(.step, L("Audio track %lld (%@): re-encoded to %@ (%@)", number, lang, encoder.name, why.joined(separator: ", ")))
+        args += ["-i", t.source.path, "-filter_complex", graph, "-map", "[out]"] + encoder.args + ["-f", "matroska", out.path]
+        duration = plan.isCutting ? plan.outputDuration : info.duration
+        let r = try await exec(ffmpeg, args, range: range, expected: duration)
+        guard r.status == 0 else { throw ProcessingError.failed(L("Preparing audio track %lld failed: %@", number, r.stderr.trimmed)) }
+        return 0
+    }
+
+    /// AC-3 for surround sources that were AC-3/DTS/TrueHD/FLAC/PCM (what TVs and media servers play everywhere),
+    /// AAC otherwise.
+    func audioEncoder(for t: AddedAudio, outExt: String) -> (name: String, args: [String]) {
+        let lossyAAC: Set<String> = ["aac", "mp3", "opus", "vorbis"]
+        if t.channels <= 6 && !lossyAAC.contains(t.codec) {
+            var a = ["-c:a", "ac3", "-b:a", t.channels > 2 ? "640k" : "256k"]
+            if ![48_000, 44_100, 32_000].contains(t.sampleRate) { a += ["-ar", "48000"] }
+            return ("AC-3", a)
+        }
+        return ("AAC", ["-c:a", "aac", "-b:a", "\(max(192, min(1024, t.channels * 96)))k"])
+    }
+
+    private func fmt(_ v: Double) -> String { String(format: "%.6f", v) }
 
     // MARK: - Helpers
 

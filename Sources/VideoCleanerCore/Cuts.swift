@@ -125,6 +125,21 @@ public struct CutPlan: Sendable {
         }
     }
 
+    private init(duration: Double, removals: [TimeRange], segments: [Segment], precise: Bool) {
+        self.duration = duration; self.removals = removals; self.segments = segments; self.precise = precise
+    }
+
+    /// The same plan with each kept part's start replaced by the source time the finished file really begins
+    /// that part at (measured after cutting). Subtitles and added audio then follow the actual result, also
+    /// when the container shifts timestamps (B-frame delay).
+    public func withMeasuredStarts(_ starts: [Double]) -> CutPlan {
+        guard starts.count == segments.count else { return self }
+        let segs = zip(segments, starts).map { seg, start in
+            Segment(requestedStart: seg.requestedStart, start: start, end: seg.end)
+        }
+        return CutPlan(duration: duration, removals: removals, segments: segs, precise: precise)
+    }
+
     public var isCutting: Bool { !removals.isEmpty }
     public var outputDuration: Double { segments.reduce(0) { $0 + $1.length } }
     public var misalignedSegments: [Segment] { segments.filter { !$0.startsOnKeyframe } }
