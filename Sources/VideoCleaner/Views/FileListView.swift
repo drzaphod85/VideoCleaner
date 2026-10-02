@@ -158,6 +158,10 @@ struct FileRow: View {
                 Badge(text: L("re-encode"), icon: "cpu", color: .purple)
                     .help("A cut is between keyframes — the video will be re-encoded")
             }
+            if !item.addedAudio.isEmpty {
+                Badge(text: "+\(item.addedAudio.count)", icon: "speaker.wave.2", color: .green)
+                    .help(L("%lld audio tracks will be added", item.addedAudio.count))
+            }
             if removedAudio > 0 {
                 Badge(text: "−\(removedAudio)", icon: "speaker.wave.2", color: .red)
             }

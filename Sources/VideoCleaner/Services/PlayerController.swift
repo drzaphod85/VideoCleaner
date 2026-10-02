@@ -16,6 +16,12 @@ final class PlayerController {
     }
 
     let player = AVPlayer()
+    /// Plays an added audio track in sync with the video (the film's own sound is muted meanwhile).
+    let audioPlayer = AVPlayer()
+    var previewTrack: AddedAudio?
+    var audioPreview: AudioPreview = .off
+    enum AudioPreview: Equatable { case off, preparing(Double), ready, failed(String) }
+
     var currentTime: Double = 0
     var duration: Double = 0
     var isPlaying = false
@@ -36,6 +42,9 @@ final class PlayerController {
     @ObservationIgnored private var rateObservation: NSKeyValueObservation?
     @ObservationIgnored private var loadTask: Task<Void, Never>?
     @ObservationIgnored private var seekInFlight = false
+    @ObservationIgnored private var audioLoadTask: Task<Void, Never>?
+    @ObservationIgnored private var audioSource: (URL, Int)?
+    @ObservationIgnored private var audioSeeking = false
     @ObservationIgnored private var pendingSeek: (Double, Bool)?
 
     init() {
@@ -45,14 +54,21 @@ final class PlayerController {
         }
         rateObservation = player.observe(\.timeControlStatus, options: [.new]) { [weak self] p, _ in
             let playing = p.timeControlStatus != .paused
-            DispatchQueue.main.async { MainActor.assumeIsolated { self?.isPlaying = playing } }
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated {
+                    self?.isPlaying = playing
+                    self?.syncAudio(force: true)
+                }
+            }
         }
+        audioPlayer.automaticallyWaitsToMinimizeStalling = false
     }
 
     private func tick(_ t: CMTime) {
         guard !seekInFlight, t.isNumeric else { return }
         let s = t.seconds
         currentTime = s
+        syncAudio(force: false)
         if skipRemoved && isPlaying, let r = skipRanges.first(where: { $0.contains(s) && $0.end - s > 0.05 }) {
             if r.end >= duration - 0.05 {
                 pause()
@@ -66,6 +82,7 @@ final class PlayerController {
         guard let info = item.info else { return }
         if itemID == item.id && loadedURL == item.url && !needsReload && state != .empty { return }
         needsReload = false
+        if itemID != item.id { setPreviewTrack(nil, tools: tools) }
         loadTask?.cancel()
         pause()
         player.replaceCurrentItem(with: nil)
@@ -124,6 +141,7 @@ final class PlayerController {
     }
 
     func unload() {
+        setPreviewTrack(nil, tools: ToolPaths())
         loadTask?.cancel()
         pause()
         player.replaceCurrentItem(with: nil)
@@ -132,6 +150,86 @@ final class PlayerController {
         state = .empty
         itemID = nil
         loadedURL = nil
+    }
+
+    // MARK: Listening to an added track
+
+    /// Starts (or stops, with nil) listening to an added track. Also call it after the track's offset,
+    /// speed or trims changed, so the sound follows at once.
+    func setPreviewTrack(_ track: AddedAudio?, tools: ToolPaths) {
+        guard let track else {
+            audioLoadTask?.cancel()
+            previewTrack = nil
+            audioPreview = .off
+            audioPlayer.pause()
+            audioPlayer.replaceCurrentItem(with: nil)
+            audioSource = nil
+            player.isMuted = false
+            return
+        }
+        previewTrack = track
+        if let src = audioSource, src.0 == track.source, src.1 == track.streamIndex, audioPreview == .ready {
+            player.isMuted = true
+            syncAudio(force: true)
+            return
+        }
+        audioLoadTask?.cancel()
+        audioPreview = .preparing(0)
+        let source = track.source, stream = track.streamIndex, duration = track.sourceDuration
+        audioLoadTask = Task {
+            do {
+                let url = try await PreviewService.shared.prepareAudio(url: source, streamIndex: stream, duration: duration,
+                                                                      tools: tools) { [weak self] p in
+                    if case .preparing = self?.audioPreview { self?.audioPreview = .preparing(p) }
+                }
+                guard !Task.isCancelled, previewTrack?.source == source else { return }
+                let item = AVPlayerItem(url: url)
+                item.audioTimePitchAlgorithm = .varispeed   // slower also means lower, like the speed correction
+                audioPlayer.replaceCurrentItem(with: item)
+                audioSource = (source, stream)
+                audioPreview = .ready
+                player.isMuted = true
+                syncAudio(force: true)
+            } catch is CancellationError {
+            } catch {
+                audioPreview = .failed(error.localizedDescription)
+            }
+        }
+    }
+
+    /// Keeps the added track's sound where the video is: source time = (movie time − offset) / stretch.
+    private func syncAudio(force: Bool) {
+        guard let t = previewTrack, audioPreview == .ready, audioPlayer.currentItem != nil, !audioSeeking else { return }
+        let src = t.sourceTime(ofMovie: currentTime)
+        let inside = src >= t.trimStart && src < (t.trimEnd ?? t.sourceDuration)
+        guard isPlaying && inside else {
+            if audioPlayer.rate != 0 { audioPlayer.pause() }
+            return
+        }
+        let rate = Float(1 / t.stretch)
+        let drift = abs(audioPlayer.currentTime().seconds - src)
+        if force || drift > 0.06 || audioPlayer.rate == 0 {
+            audioSeeking = true
+            audioPlayer.pause()
+            audioPlayer.seek(to: CMTime(seconds: src, preferredTimescale: 48_000), toleranceBefore: .zero,
+                             toleranceAfter: .zero) { [weak self] _ in
+                DispatchQueue.main.async {
+                    MainActor.assumeIsolated {
+                        guard let self else { return }
+                        self.audioSeeking = false
+                        if self.isPlaying, let t = self.previewTrack {
+                            // Re-aim at where the video is now (it moved on while seeking)
+                            let now = t.sourceTime(ofMovie: self.player.currentTime().seconds)
+                            if abs(now - src) > 0.02 {
+                                self.audioPlayer.seek(to: CMTime(seconds: now, preferredTimescale: 48_000),
+                                                      toleranceBefore: .zero, toleranceAfter: .zero)
+                            }
+                            self.audioPlayer.rate = rate
+                        }
+                    }
+                }
+            }
+        }
     }
 
     // MARK: Transport
@@ -146,7 +244,10 @@ final class PlayerController {
         player.play()
     }
 
-    func pause() { player.pause() }
+    func pause() {
+        player.pause()
+        audioPlayer.pause()
+    }
 
     /// Seeks with chasing: while a seek is running only the latest target is kept.
     func seek(to t: Double, precise: Bool = true) {

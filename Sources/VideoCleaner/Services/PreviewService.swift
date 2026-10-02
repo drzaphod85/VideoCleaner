@@ -80,6 +80,32 @@ final class PreviewService {
         return (out, transcode ? .transcode : .remux)
     }
 
+    /// A stereo AAC copy of one audio stream, for listening to an added track in the player.
+    func prepareAudio(url: URL, streamIndex: Int, duration: Double, tools: ToolPaths,
+                      progress: @escaping @MainActor (Double) -> Void) async throws -> URL {
+        guard let ffmpeg = tools.ffmpeg else { throw ProcessingError.missingTool("ffmpeg") }
+        let key = cacheKey(url: url, transcode: false) + "-a\(streamIndex)"
+        let out = cacheDir.appendingPathComponent("\(key).m4a")
+        if FileManager.default.fileExists(atPath: out.path) { return out }
+        try FileManager.default.createDirectory(at: cacheDir, withIntermediateDirectories: true)
+        let part = cacheDir.appendingPathComponent("\(key).part.m4a")
+        defer { try? FileManager.default.removeItem(at: part) }
+        let total = max(duration, 1)
+        let r = try await ProcessRunner.run(ffmpeg, [
+            "-hide_banner", "-nostdin", "-y", "-loglevel", "error", "-progress", "pipe:1", "-nostats",
+            "-i", url.path, "-map", "0:\(streamIndex)", "-vn", "-sn", "-dn", "-ac", "2", "-c:a", "aac", "-b:a", "160k",
+            "-f", "mp4", part.path]) { line in
+                guard line.hasPrefix("out_time_us="), let us = Double(line.dropFirst(12)) else { return }
+                let value = min(1, max(0, us / 1_000_000 / total))
+                Task { @MainActor in progress(value) }
+            }
+        guard r.status == 0 else {
+            throw ProcessingError.failed(L("Could not prepare the audio for listening: %@", r.stderr.trimmingCharacters(in: .whitespacesAndNewlines)))
+        }
+        try FileManager.default.moveItem(at: part, to: out)
+        return out
+    }
+
     private func cacheKey(url: URL, transcode: Bool) -> String {
         let attrs = try? FileManager.default.attributesOfItem(atPath: url.path)
         let size = attrs?[.size] as? Int64 ?? 0

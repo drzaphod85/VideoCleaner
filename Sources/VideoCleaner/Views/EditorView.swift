@@ -604,6 +604,7 @@ struct ActionBar: View {
         if o.extractSubtitles && subs > 0 { parts.append(L("save %lld subtitles as .srt", subs)) }
         if o.removeSubtitlesFromVideo && !info.subtitleStreams.isEmpty { parts.append(L("strip subtitles from the video")) }
         if !item.languageOverrides.isEmpty { parts.append(L("set %lld track languages", item.languageOverrides.count)) }
+        if !item.addedAudio.isEmpty { parts.append(L("add %lld audio tracks", item.addedAudio.count)) }
         if o.convertToMKV && item.url.pathExtension.lowercased() != "mkv" { parts.append(L("convert to MKV")) }
         if parts.isEmpty { parts.append(L("write a clean copy")) }
         return L("Will: %@", parts.joined(separator: " · "))

@@ -36,6 +36,15 @@ final class VideoItem: Identifiable {
     var markIn: Double?
     var preciseCut = false
 
+    /// Audio tracks from other files (e.g. a Swedish dub).
+    var addedAudio: [AddedAudio] = []
+    var syncStates: [AddedAudio.ID: SyncState] = [:]
+    enum SyncState: Equatable {
+        case running(Double)
+        case done(AudioSyncResult)
+        case failed(String)
+    }
+
     var audioOverrides: [Int: Bool] = [:]
     var subtitleOverrides: [Int: Bool] = [:]
     var languageOverrides: [Int: String] = [:]
@@ -52,6 +61,7 @@ final class VideoItem: Identifiable {
 
     var hasEdits: Bool {
         !removals.isEmpty || !audioOverrides.isEmpty || !subtitleOverrides.isEmpty || !languageOverrides.isEmpty
+            || !addedAudio.isEmpty
     }
 
     // MARK: Tracks
@@ -123,6 +133,8 @@ final class VideoItem: Identifiable {
         audioOverrides = [:]
         subtitleOverrides = [:]
         languageOverrides = [:]
+        addedAudio = []
+        syncStates = [:]
     }
 
     func makeJob(options: ProcessingOptions, rules: TrackRules) -> ProcessingJob? {
@@ -131,6 +143,7 @@ final class VideoItem: Identifiable {
             input: url, info: info, keyframes: keyframes,
             keepAudio: Set(info.audioStreams.filter { keepsAudio($0, rules: rules) }.map(\.index)),
             selectedSubtitles: Set(info.subtitleStreams.filter { selectsSubtitle($0, rules: rules) }.map(\.index)),
-            languages: languageOverrides, removals: removals, preciseCut: preciseCut, options: options)
+            languages: languageOverrides, removals: removals, preciseCut: preciseCut, addedAudio: addedAudio,
+            options: options)
     }
 }

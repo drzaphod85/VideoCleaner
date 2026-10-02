@@ -87,6 +87,16 @@ struct TracksPanel: View {
                                            set: { item.audioOverrides[a.index] = $0 }),
                              help: L("Keep this audio track"))
                 }
+                ForEach(item.addedAudio) { track in
+                    AddedTrackView(item: item, info: info, trackID: track.id)
+                }
+                Button {
+                    model.addAudioTrack(to: item)
+                } label: {
+                    Label("Add Audio Track…", systemImage: "plus.circle")
+                }
+                .buttonStyle(.borderless)
+                .help("Add an audio track from another file, e.g. a dub in another language, and synchronize it with the film")
             } header: {
                 HStack {
                     Text("Audio")

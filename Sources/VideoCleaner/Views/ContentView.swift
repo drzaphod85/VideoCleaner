@@ -46,6 +46,7 @@ struct ContentView: View {
             return true
         } isTargeted: { dropTargeted = $0 }
         .sheet(item: $model.commandPreview) { CommandPreviewSheet(preview: $0) }
+        .sheet(item: $model.audioChoice) { AudioChoiceSheet(choice: $0) }
     }
 
     private var subtitle: String {

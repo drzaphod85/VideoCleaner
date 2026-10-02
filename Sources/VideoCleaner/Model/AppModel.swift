@@ -29,6 +29,7 @@ final class AppModel {
 
     var showLog = false
     var commandPreview: CommandPreview?
+    var audioChoice: AudioChoice?
 
     struct CommandPreview: Identifiable {
         let id = UUID()
@@ -250,6 +251,103 @@ final class AppModel {
             }.joined(separator: "\n\n")
             commandPreview = CommandPreview(title: item.name, text: text)
         }
+    }
+
+    // MARK: Added audio tracks
+
+    /// Asks for an audio file (or a video file to take the audio from) and adds its track to the item.
+    /// Files with several audio tracks get a chooser (see `audioChoice`).
+    func addAudioTrack(to item: VideoItem) {
+        let panel = NSOpenPanel()
+        panel.title = L("Add Audio Track")
+        panel.prompt = L("Add")
+        panel.message = L("Choose an audio file, or a video file to take an audio track from.")
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        var types: [UTType] = [.audio, .movie]
+        for ext in ["mka", "mkv", "ac3", "eac3", "ec3", "dts", "thd", "flac", "opus", "ts", "m2ts"] {
+            if let t = UTType(filenameExtension: ext) { types.append(t) }
+        }
+        panel.allowedContentTypes = types
+        panel.directoryURL = item.url.deletingLastPathComponent()
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        let tools = self.tools
+        Task {
+            do {
+                let info = try await Probe.mediaInfo(url, tools: tools)
+                let streams = info.audioStreams
+                if streams.isEmpty {
+                    showAlert(L("No audio track found"), L("%@ has no audio track.", url.lastPathComponent))
+                } else if streams.count == 1 {
+                    addTrack(stream: streams[0], from: url, info: info, to: item)
+                } else {
+                    audioChoice = AudioChoice(item: item, url: url, info: info)
+                }
+            } catch {
+                showAlert(L("Could not read the file"), error.localizedDescription)
+            }
+        }
+    }
+
+    struct AudioChoice: Identifiable {
+        let id = UUID()
+        let item: VideoItem
+        let url: URL
+        let info: MediaInfo
+    }
+
+    func addTrack(stream: StreamInfo, from url: URL, info: MediaInfo, to item: VideoItem) {
+        var track = AddedAudio(source: url, stream: stream, sourceDuration: info.duration)
+        if track.language == "und", let first = rules.subtitleLanguages.sorted().first { track.language = first }
+        track.title = track.language == "und" ? "" : Languages.displayName(track.language)
+        item.addedAudio.append(track)
+        expandedAudioTrack = track.id
+    }
+
+    /// The added track whose editor is open in the inspector.
+    var expandedAudioTrack: AddedAudio.ID?
+
+    func removeTrack(_ id: AddedAudio.ID, from item: VideoItem) {
+        item.addedAudio.removeAll { $0.id == id }
+        item.syncStates[id] = nil
+        if player.previewTrack?.id == id { player.setPreviewTrack(nil, tools: tools) }
+    }
+
+    /// Finds offset and speed against one of the file's own audio tracks and applies them.
+    func synchronize(_ trackID: AddedAudio.ID, in item: VideoItem, reference: StreamInfo) {
+        guard let info = item.info, let track = item.addedAudio.first(where: { $0.id == trackID }) else { return }
+        item.syncStates[trackID] = .running(0)
+        let tools = self.tools
+        let url = item.url
+        Task {
+            do {
+                let result = try await AudioSync.synchronize(
+                    reference: url, referenceStream: reference.index, referenceDuration: info.duration,
+                    candidate: track.source, candidateStream: track.streamIndex, candidateDuration: track.sourceDuration,
+                    tools: tools) { p in
+                        DispatchQueue.main.async {
+                            MainActor.assumeIsolated {
+                                if case .running = item.syncStates[trackID] { item.syncStates[trackID] = .running(p) }
+                            }
+                        }
+                    }
+                guard let i = item.addedAudio.firstIndex(where: { $0.id == trackID }) else { return }
+                item.addedAudio[i].offset = result.offset
+                item.addedAudio[i].stretch = result.stretch
+                item.syncStates[trackID] = .done(result)
+            } catch is CancellationError {
+                item.syncStates[trackID] = nil
+            } catch {
+                item.syncStates[trackID] = .failed(error.localizedDescription)
+            }
+        }
+    }
+
+    func showAlert(_ title: String, _ message: String) {
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = message
+        alert.runModal()
     }
 
     func chooseOutputDirectory() {
