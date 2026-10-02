@@ -95,6 +95,23 @@ Requires Xcode 16 or later (Swift 6 toolchain). The project is a plain Swift pac
 - `Sources/VideoCleaner` — the SwiftUI app: file list, player, timeline, inspector.
 - `Tests/VideoCleanerCoreTests` — unit tests and end-to-end tests that generate real MKV/MP4 files with ffmpeg.
 
+### Signing and notarizing (maintainers)
+
+`Scripts/build-app.sh` signs with a **Developer ID Application** certificate when one is in the keychain (hardened runtime, secure timestamp) and falls back to ad-hoc signing otherwise. `--notarize` also sends the DMG to Apple, staples the ticket to the DMG and the app, and checks both with Gatekeeper. One-time setup:
+
+1. **Certificate** — Xcode › Settings › Accounts › your team › Manage Certificates… › **+** › **Developer ID Application** (only the Account Holder can create it). "Apple Development" and "Mac Developer Installer" certificates can't be used. If Xcode shows the certificate as invalid, delete the expired *Apple Worldwide Developer Relations Certification Authority* (expired 7 Feb 2023) from the login keychain.
+2. **App-specific password** — sign in at [appleid.apple.com](https://appleid.apple.com) › Sign-In and Security › **App-Specific Passwords** › **+**, and name it e.g. "notarytool". Your normal Apple Account password does not work here.
+3. **Store the credentials** in the keychain (asks for the app-specific password):
+
+   ```bash
+   xcrun notarytool store-credentials VideoCleaner --apple-id you@example.com --team-id TEAMID
+   ```
+
+   The Team ID is the 10 characters in parentheses in the certificate name, and is also shown under Membership at developer.apple.com.
+   *Alternative:* an App Store Connect API key (Users and Access › Integrations › Team Keys, role Developer):
+   `xcrun notarytool store-credentials VideoCleaner --key AuthKey_XXXX.p8 --key-id XXXX --issuer <issuer-id>`.
+4. Build: `Scripts/build-app.sh --notarize` → `build/VideoCleaner-<version>.dmg`, ready to upload as a release.
+
 ## Translations
 
 All strings in the code are English; translations live in `Resources/<language>.lproj/Localizable.strings`, with the English text as the key:
