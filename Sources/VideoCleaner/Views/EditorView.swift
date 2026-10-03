@@ -143,6 +143,7 @@ struct EditorView: View {
         case "[": model.cutBefore(item)
         case "]": model.cutAfter(item)
         case "k": p.togglePlay()
+        case "a": model.cycleListening(in: item)
         case "j": p.seek(to: p.currentTime - 5)
         case "l": p.seek(to: p.currentTime + 5)
         case "+", "=": timeline.zoomIn(around: p.currentTime)
@@ -299,6 +300,8 @@ struct TransportBar: View {
 
             timecode(p)
 
+            AudioTrackMenu(item: item)
+
             keyframeIndicator(p.currentTime)
 
             Spacer()
@@ -393,6 +396,77 @@ struct TransportBar: View {
                 .labelStyle(.titleAndIcon).font(.caption).foregroundStyle(.orange)
         case .idle:
             EmptyView()
+        }
+    }
+}
+
+// MARK: - Audio track menu
+
+/// Chooses which audio track is heard: the file's own tracks or added ones (played with their sync settings).
+struct AudioTrackMenu: View {
+    @Environment(AppModel.self) private var model
+    let item: VideoItem
+
+    var body: some View {
+        if let info = item.info, info.audioStreams.count + item.addedAudio.count > 1 {
+            let current = model.listening(in: item)
+            Menu {
+                Section("The File's Tracks") {
+                    ForEach(info.audioStreams) { s in
+                        choiceButton(.stream(s.index), current: current,
+                                     title: "a\(s.ordinal + 1) · \(Languages.displayName(item.language(of: s)))",
+                                     detail: s.summary + (s.title.map { " · \($0)" } ?? ""))
+                    }
+                }
+                if !item.addedAudio.isEmpty {
+                    Section("Added Tracks") {
+                        ForEach(item.addedAudio) { t in
+                            choiceButton(.added(t.id), current: current,
+                                         title: "+ \(t.title.isEmpty ? Languages.displayName(t.language) : t.title)",
+                                         detail: L("Offset %@", AddedTrackView.signed(t.offset))
+                                            + (t.isStretched ? " · " + (AddedAudio.label(forStretch: t.stretch) ?? "") : ""))
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: model.player.previewTrack == nil ? "speaker.wave.2" : "speaker.wave.2.fill")
+                    Text(label(current, info: info)).lineLimit(1)
+                    if case .preparing(let p) = model.player.audioPreview {
+                        ProgressView(value: p).frame(width: 40).controlSize(.mini)
+                    }
+                }
+                .font(.callout)
+            }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+            .help("Choose which audio track you hear ( A switches )")
+        }
+    }
+
+    private func choiceButton(_ choice: AppModel.ListenChoice, current: AppModel.ListenChoice?,
+                              title: String, detail: String) -> some View {
+        Button {
+            model.listen(to: choice, in: item)
+        } label: {
+            if choice == current {
+                Label { Text(verbatim: "\(title)   \(detail)") } icon: { Image(systemName: "checkmark") }
+            } else {
+                Text(verbatim: "\(title)   \(detail)")
+            }
+        }
+    }
+
+    private func label(_ choice: AppModel.ListenChoice?, info: MediaInfo) -> String {
+        switch choice {
+        case .stream(let index):
+            guard let s = info.audioStreams.first(where: { $0.index == index }) else { return "" }
+            return "a\(s.ordinal + 1) · \(Languages.displayName(item.language(of: s)))"
+        case .added(let id):
+            guard let t = item.addedAudio.first(where: { $0.id == id }) else { return "" }
+            return "+ " + (t.title.isEmpty ? Languages.displayName(t.language) : t.title)
+        case nil:
+            return ""
         }
     }
 }

@@ -17,6 +17,12 @@ final class AppModel {
     var removeAudioLanguagesText: String { didSet { Prefs.defaults.set(removeAudioLanguagesText, forKey: Prefs.removeAudioLangs) } }
     var snapToKeyframes: Bool { didSet { Prefs.defaults.set(snapToKeyframes, forKey: Prefs.snap) } }
     var skipRemovedWhilePlaying: Bool { didSet { Prefs.defaults.set(skipRemovedWhilePlaying, forKey: Prefs.skipRemoved) } }
+    /// Languages shown first in every language menu (Settings › Languages).
+    var favoriteLanguages: [String] { didSet { Prefs.defaults.set(favoriteLanguages, forKey: Prefs.favoriteLanguages) } }
+    static var suggestedFavorites: [String] {
+        Languages.defaultFavorites(appLanguage: Bundle.main.preferredLocalizations.first ?? "en",
+                                   region: Locale.current.region?.identifier)
+    }
     var toolOverrides: [String: String] { didSet { Prefs.defaults.set(toolOverrides, forKey: Prefs.toolOverrides); refreshTools() } }
 
     private(set) var tools: ToolPaths
@@ -44,6 +50,7 @@ final class AppModel {
         removeAudioLanguagesText = d.string(forKey: Prefs.removeAudioLangs) ?? ""
         snapToKeyframes = d.object(forKey: Prefs.snap) as? Bool ?? false
         skipRemovedWhilePlaying = d.object(forKey: Prefs.skipRemoved) as? Bool ?? false
+        favoriteLanguages = d.stringArray(forKey: Prefs.favoriteLanguages) ?? Self.suggestedFavorites
         let overrides = d.dictionary(forKey: Prefs.toolOverrides) as? [String: String] ?? [:]
         toolOverrides = overrides
         tools = ToolPaths.locate(overrides: overrides)
@@ -298,10 +305,57 @@ final class AppModel {
 
     func addTrack(stream: StreamInfo, from url: URL, info: MediaInfo, to item: VideoItem) {
         var track = AddedAudio(source: url, stream: stream, sourceDuration: info.duration)
-        if track.language == "und", let first = rules.subtitleLanguages.sorted().first { track.language = first }
+        // No language tag: guess from the file name ("Film.svenska.TV.ac3"), else the stream title
+        if track.language == "und" {
+            track.language = Languages.guess(fromFileName: url.lastPathComponent)
+                ?? stream.title.flatMap { Languages.guess(fromFileName: $0) } ?? "und"
+        }
         track.title = track.language == "und" ? "" : Languages.displayName(track.language)
         item.addedAudio.append(track)
         expandedAudioTrack = track.id
+    }
+
+    // MARK: Which audio is heard
+
+    enum ListenChoice: Hashable {
+        case stream(Int)        // one of the file's own tracks (stream index)
+        case added(UUID)        // an added track, played with its offset and speed
+    }
+
+    /// The track heard in the player. The preview itself carries the file's first audio track.
+    func listening(in item: VideoItem) -> ListenChoice? {
+        if let t = player.previewTrack {
+            if let s = player.listeningStream { return .stream(s) }
+            return .added(t.id)
+        }
+        return item.info?.audioStreams.first.map { .stream($0.index) }
+    }
+
+    func listen(to choice: ListenChoice, in item: VideoItem) {
+        guard let info = item.info else { return }
+        switch choice {
+        case .stream(let index):
+            if index == info.audioStreams.first?.index {
+                player.setPreviewTrack(nil, tools: tools)
+            } else if let s = info.audioStreams.first(where: { $0.index == index }) {
+                player.setPreviewTrack(AddedAudio(source: item.url, stream: s, sourceDuration: info.duration), tools: tools)
+                player.listeningStream = index
+            }
+        case .added(let id):
+            if let t = item.addedAudio.first(where: { $0.id == id }) { player.setPreviewTrack(t, tools: tools) }
+        }
+    }
+
+    /// All tracks that can be heard, in menu order.
+    func listenChoices(in item: VideoItem) -> [ListenChoice] {
+        (item.info?.audioStreams.map { ListenChoice.stream($0.index) } ?? []) + item.addedAudio.map { .added($0.id) }
+    }
+
+    func cycleListening(in item: VideoItem) {
+        let all = listenChoices(in: item)
+        guard all.count > 1 else { NSSound.beep(); return }
+        let i = listening(in: item).flatMap { all.firstIndex(of: $0) } ?? 0
+        listen(to: all[(i + 1) % all.count], in: item)
     }
 
     /// The added track whose editor is open in the inspector.
@@ -376,6 +430,7 @@ enum Prefs {
     static let snap = "snapToKeyframesV2"  // default changed to off in 1.1
     static let skipRemoved = "skipRemovedWhilePlaying"
     static let toolOverrides = "toolOverrides"
+    static let favoriteLanguages = "favoriteLanguages"
 
     static func save<T: Encodable>(_ value: T, key: String) {
         if let data = try? JSONEncoder().encode(value) { defaults.set(data, forKey: key) }

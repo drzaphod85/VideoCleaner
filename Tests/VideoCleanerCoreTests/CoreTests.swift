@@ -251,3 +251,24 @@ final class LogBox: @unchecked Sendable {
     func add(_ e: LogEntry) { lock.lock(); entries.append(e); lock.unlock() }
     var text: String { lock.lock(); defer { lock.unlock() }; return entries.map(\.text).joined(separator: "\n") }
 }
+
+@Suite struct LanguageGuessTests {
+    @Test func guessesFromFileNames() {
+        #expect(Languages.guess(fromFileName: "Filmen.svenska.TV.ac3") == "swe")
+        #expect(Languages.guess(fromFileName: "Movie.2019.SWE.dts") == "swe")
+        #expect(Languages.guess(fromFileName: "Elokuva - suomi.mka") == "fin")
+        #expect(Languages.guess(fromFileName: "Der.Film.German.DL.ac3") == "deu")
+        #expect(Languages.guess(fromFileName: "film_norsk_tale.ac3") == "nor")
+        #expect(Languages.guess(fromFileName: "It.Is.No.Movie.2020.mkv") == nil)
+        #expect(Languages.guess(fromFileName: "recording.ts") == nil)
+    }
+
+    @Test func favoritesFollowAppLanguageAndRegion() {
+        #expect(Languages.defaultFavorites(appLanguage: "sv", region: "SE") == ["swe", "nor", "dan", "fin", "isl", "eng", "deu"])
+        #expect(Languages.defaultFavorites(appLanguage: "da", region: "DK").prefix(2) == ["dan", "swe"])
+        #expect(Languages.defaultFavorites(appLanguage: "en", region: "SE").first == "eng")
+        let us = Languages.defaultFavorites(appLanguage: "en", region: "US")
+        #expect(us.first == "eng" && us.contains("fra") && Set(us).count == us.count)
+        #expect(Languages.defaultFavorites(appLanguage: "en", region: "DE").prefix(2) == ["eng", "deu"])
+    }
+}

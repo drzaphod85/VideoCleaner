@@ -30,6 +30,8 @@
 "Add Audio Track" = "Tilføj lydspor";
 "Add Audio Track…" = "Tilføj lydspor…";
 "Add files or folders" = "Tilføj filer eller mapper";
+"Add Language" = "Tilføj sprog";
+"Added Tracks" = "Tilføjede spor";
 "Adding %lld audio tracks" = "Tilføjer %lld lydspor";
 "Adding audio tracks failed: %@" = "Tilføjelse af lydspor mislykkedes: %@";
 "After cuts" = "Efter klip";
@@ -64,6 +66,7 @@
 "Choose files, a folder or a folder with subfolders — every .mkv/.mp4/.m4v/.mov is added." = "Vælg filer, en mappe eller en mappe med undermapper — alle .mkv/.mp4/.m4v/.mov tilføjes.";
 "Choose Folder…" = "Vælg mappe…";
 "Choose the folder where cleaned files and subtitles are saved" = "Vælg mappen hvor de rensede filer og undertekster gemmes";
+"Choose which audio track you hear ( A switches )" = "Vælg hvilket lydspor du hører ( A skifter )";
 "Cleaned and re-timed" = "Rensede og tidsjusterede";
 "Cleans up and trims video files for Plex and Jellyfin media servers." = "Renser og klipper videofiler til medieserverne Plex og Jellyfin.";
 "Clear Cuts" = "Ryd klip";
@@ -155,6 +158,7 @@
 "Keyframe %lld of %lld" = "Keyframe %lld af %lld";
 "Keyframes (click to snap)" = "Keyframes (klik for at fastgøre)";
 "Keyframes could not be read" = "Keyframes kunne ikke læses";
+"Languages" = "Sprog";
 "Languages set" = "Sprog angivet";
 "License" = "Licens";
 "Listen in Player" = "Lyt i afspilleren";
@@ -178,10 +182,12 @@
 "Mode" = "Tilstand";
 "More Languages" = "Flere sprog";
 "Move Cuts to Keyframes" = "Flyt klippene til keyframes";
+"Move down" = "Flyt ned";
 "Move every cut where a kept part starts to the nearest keyframe — then nothing is re-encoded" = "Flyt hvert klip, hvor en bevaret del starter, til nærmeste keyframe — så omkodes intet";
 "Move the original to the Trash after converting" = "Flyt originalen til papirkurven efter konvertering";
 "Move the sound %@ ms" = "Flyt lyden %@ ms";
 "Move the track so that it starts at the playhead" = "Flyt sporet, så det starter ved afspilningshovedet";
+"Move up" = "Flyt op";
 "Moved the original to the Trash: %@" = "Flyttede originalen til papirkurven: %@";
 "MP4/MOV is remuxed to .mkv without re-encoding. MKV is rewritten in place." = "MP4/MOV remuxes til .mkv uden omkodning. MKV omskrives på stedet.";
 "Name" = "Navn";
@@ -257,6 +263,7 @@
 "Remove Finished from List" = "Fjern færdige fra listen";
 "Remove font and position tags" = "Fjern skrifttype- og placeringsmærker";
 "Remove from List" = "Fjern fra listen";
+"Remove from the list" = "Fjern fra listen";
 "Remove languages" = "Fjern sprog";
 "Remove the selected files from the list (the files are not deleted)" = "Fjern de valgte filer fra listen (filerne slettes ikke)";
 "Remove Track" = "Fjern sporet";
@@ -294,6 +301,7 @@
 "Show or hide the log for the selected file" = "Vis/skjul loggen for den valgte fil";
 "Show or hide tracks and settings" = "Vis/skjul spor og indstillinger";
 "Show the whole file ( 0 )" = "Vis hele filen ( 0 )";
+"Shown first in every language menu; all other languages are under “More Languages”. The suggestion is based on the app's language and your region." = "Vises først i alle sprogmenuer; øvrige sprog findes under »Flere sprog«. Forslaget bygger på programmets sprog og din region.";
 "Skip removed" = "Spring fjernet over";
 "Skipped: %@" = "Sprunget over: %@";
 "Skipping s%lld (image-based %@, cannot become .srt)" = "Springer s%lld over (billedbaseret %@, kan ikke blive .srt)";
@@ -317,6 +325,7 @@
 "The file cannot be played" = "Filen kan ikke afspilles";
 "The file is still being written" = "Filen skrives stadig";
 "The file is still being written (size is changing) — skipping" = "Filen skrives stadig (størrelsen ændrer sig) — springer over";
+"The File's Tracks" = "Filens spor";
 "The offset changes by up to %@ s during the film — the dub probably comes from a different edit (e.g. a TV version). Check it by listening." = "Forskydningen ændrer sig op til %@ s i løbet af filmen — eftersynkroniseringen stammer sandsynligvis fra en anden version (f.eks. en tv-version). Kontrollér ved at lytte.";
 "The result file is empty — the original is untouched" = "Resultatfilen er tom — originalen er urørt";
 "The target already exists" = "Målet findes allerede";
@@ -338,6 +347,7 @@
 "Unknown (und)" = "Ukendt (und)";
 "Unknown language" = "Ukendt sprog";
 "Use mkvtoolnix for MKV files" = "Brug mkvtoolnix til MKV-filer";
+"Use Suggestion" = "Brug forslaget";
 "Video" = "Video";
 "VideoCleaner on GitHub" = "VideoCleaner på GitHub";
 "Visible: %@" = "Synligt: %@";

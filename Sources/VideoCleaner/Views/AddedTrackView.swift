@@ -32,6 +32,14 @@ struct AddedTrackView: View {
         }
     }
 
+    /// Changes the language; the name follows along unless the user typed a name of their own.
+    private func setLanguage(_ code: String, of t: AddedAudio) {
+        guard let i = index else { return }
+        let followsLanguage = t.title.isEmpty || t.title == Languages.displayName(t.language)
+        item.addedAudio[i].language = code
+        if followsLanguage { item.addedAudio[i].title = code == "und" ? "" : Languages.displayName(code) }
+    }
+
     private func binding<T>(_ key: WritableKeyPath<AddedAudio, T>) -> Binding<T> {
         Binding(get: { item.addedAudio.first { $0.id == trackID }![keyPath: key] },
                 set: { v in if let i = index { item.addedAudio[i][keyPath: key] = v } })
@@ -47,7 +55,7 @@ struct AddedTrackView: View {
                     .font(.caption.monospaced().weight(.semibold))
                     .padding(.horizontal, 4).padding(.vertical, 1)
                     .background(.quaternary, in: RoundedRectangle(cornerRadius: 3))
-                LanguagePickerMenu(code: t.language) { binding(\.language).wrappedValue = $0 }
+                LanguagePickerMenu(code: t.language) { setLanguage($0, of: t) }
                 if t.isDefault { Badge(text: L("Default"), icon: "star.fill", color: .secondary) }
                 if model.player.previewTrack?.id == t.id { Image(systemName: "speaker.wave.2.fill").foregroundStyle(.tint) }
             }
@@ -281,15 +289,7 @@ struct LanguagePickerMenu: View {
 
     var body: some View {
         Menu {
-            ForEach(Languages.all.prefix(Languages.commonCount)) { lang in
-                Button(Languages.displayName(lang.code3)) { onSelect(lang.code3) }
-            }
-            Menu("More Languages") {
-                ForEach(Languages.all.dropFirst(Languages.commonCount)
-                    .sorted { Languages.displayName($0.code3) < Languages.displayName($1.code3) }) { lang in
-                    Button(Languages.displayName(lang.code3)) { onSelect(lang.code3) }
-                }
-            }
+            LanguageMenuItems(onSelect: onSelect)
             Divider()
             Button("Unknown (und)") { onSelect("und") }
         } label: {

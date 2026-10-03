@@ -30,6 +30,8 @@
 "Add Audio Track" = "Lisää ääniraita";
 "Add Audio Track…" = "Lisää ääniraita…";
 "Add files or folders" = "Lisää tiedostoja tai kansioita";
+"Add Language" = "Lisää kieli";
+"Added Tracks" = "Lisätyt raidat";
 "Adding %lld audio tracks" = "Lisätään %lld ääniraitaa";
 "Adding audio tracks failed: %@" = "Ääniraitojen lisääminen epäonnistui: %@";
 "After cuts" = "Leikkausten jälkeen";
@@ -64,6 +66,7 @@
 "Choose files, a folder or a folder with subfolders — every .mkv/.mp4/.m4v/.mov is added." = "Valitse tiedostoja, kansio tai kansio alikansioineen — kaikki .mkv/.mp4/.m4v/.mov lisätään.";
 "Choose Folder…" = "Valitse kansio…";
 "Choose the folder where cleaned files and subtitles are saved" = "Valitse kansio, johon puhdistetut tiedostot ja tekstitykset tallennetaan";
+"Choose which audio track you hear ( A switches )" = "Valitse kuultava ääniraita ( A vaihtaa )";
 "Cleaned and re-timed" = "Puhdistettu ja ajastettu";
 "Cleans up and trims video files for Plex and Jellyfin media servers." = "Siivoaa ja leikkaa videotiedostoja Plex- ja Jellyfin-mediapalvelimille.";
 "Clear Cuts" = "Tyhjennä leikkaukset";
@@ -155,6 +158,7 @@
 "Keyframe %lld of %lld" = "Avainkuva %lld/%lld";
 "Keyframes (click to snap)" = "Avainkuvat (kiinnitä napsauttamalla)";
 "Keyframes could not be read" = "Avainkuvia ei voitu lukea";
+"Languages" = "Kielet";
 "Languages set" = "Kielet asetettu";
 "License" = "Lisenssi";
 "Listen in Player" = "Kuuntele soittimessa";
@@ -178,10 +182,12 @@
 "Mode" = "Tila";
 "More Languages" = "Lisää kieliä";
 "Move Cuts to Keyframes" = "Siirrä leikkaukset avainkuviin";
+"Move down" = "Siirrä alas";
 "Move every cut where a kept part starts to the nearest keyframe — then nothing is re-encoded" = "Siirrä jokainen leikkaus, josta säilytettävä osa alkaa, lähimpään avainkuvaan — silloin mitään ei koodata uudelleen";
 "Move the original to the Trash after converting" = "Siirrä alkuperäinen roskakoriin muuntamisen jälkeen";
 "Move the sound %@ ms" = "Siirrä ääntä %@ ms";
 "Move the track so that it starts at the playhead" = "Siirrä raitaa niin, että se alkaa toistokohdasta";
+"Move up" = "Siirrä ylös";
 "Moved the original to the Trash: %@" = "Alkuperäinen siirrettiin roskakoriin: %@";
 "MP4/MOV is remuxed to .mkv without re-encoding. MKV is rewritten in place." = "MP4/MOV muunnetaan (remux) .mkv:ksi ilman uudelleenkoodausta. MKV kirjoitetaan uudelleen paikallaan.";
 "Name" = "Nimi";
@@ -257,6 +263,7 @@
 "Remove Finished from List" = "Poista valmiit luettelosta";
 "Remove font and position tags" = "Poista fontti- ja sijaintitunnisteet";
 "Remove from List" = "Poista luettelosta";
+"Remove from the list" = "Poista luettelosta";
 "Remove languages" = "Poista kielet";
 "Remove the selected files from the list (the files are not deleted)" = "Poista valitut tiedostot luettelosta (tiedostoja ei poisteta)";
 "Remove Track" = "Poista raita";
@@ -294,6 +301,7 @@
 "Show or hide the log for the selected file" = "Näytä tai piilota valitun tiedoston loki";
 "Show or hide tracks and settings" = "Näytä tai piilota raidat ja asetukset";
 "Show the whole file ( 0 )" = "Näytä koko tiedosto ( 0 )";
+"Shown first in every language menu; all other languages are under “More Languages”. The suggestion is based on the app's language and your region." = "Näytetään ensimmäisinä kaikissa kielivalikoissa; muut kielet ovat kohdassa ”Lisää kieliä”. Ehdotus perustuu sovelluksen kieleen ja alueeseesi.";
 "Skip removed" = "Ohita poistettu";
 "Skipped: %@" = "Ohitettu: %@";
 "Skipping s%lld (image-based %@, cannot become .srt)" = "Ohitetaan s%lld (kuvapohjainen %@, ei voi muuntaa .srt:ksi)";
@@ -317,6 +325,7 @@
 "The file cannot be played" = "Tiedostoa ei voi toistaa";
 "The file is still being written" = "Tiedostoa kirjoitetaan yhä";
 "The file is still being written (size is changing) — skipping" = "Tiedostoa kirjoitetaan yhä (koko muuttuu) — ohitetaan";
+"The File's Tracks" = "Tiedoston raidat";
 "The offset changes by up to %@ s during the film — the dub probably comes from a different edit (e.g. a TV version). Check it by listening." = "Siirtymä muuttuu elokuvan aikana jopa %@ s — dubbaus on todennäköisesti eri versiosta (esim. tv-versio). Tarkista kuuntelemalla.";
 "The result file is empty — the original is untouched" = "Tulostiedosto on tyhjä — alkuperäiseen ei ole koskettu";
 "The target already exists" = "Kohde on jo olemassa";
@@ -338,6 +347,7 @@
 "Unknown (und)" = "Tuntematon (und)";
 "Unknown language" = "Tuntematon kieli";
 "Use mkvtoolnix for MKV files" = "Käytä mkvtoolnixia MKV-tiedostoille";
+"Use Suggestion" = "Käytä ehdotusta";
 "Video" = "Video";
 "VideoCleaner on GitHub" = "VideoCleaner GitHubissa";
 "Visible: %@" = "Näkyvissä: %@";

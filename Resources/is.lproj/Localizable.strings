@@ -30,6 +30,8 @@
 "Add Audio Track" = "Bæta við hljóðrás";
 "Add Audio Track…" = "Bæta við hljóðrás…";
 "Add files or folders" = "Bæta við skrám eða möppum";
+"Add Language" = "Bæta við tungumáli";
+"Added Tracks" = "Viðbættar rásir";
 "Adding %lld audio tracks" = "Bæti við %lld hljóðrásum";
 "Adding audio tracks failed: %@" = "Ekki tókst að bæta við hljóðrásum: %@";
 "After cuts" = "Eftir klippingu";
@@ -64,6 +66,7 @@
 "Choose files, a folder or a folder with subfolders — every .mkv/.mp4/.m4v/.mov is added." = "Veldu skrár, möppu eða möppu með undirmöppum — öllum .mkv/.mp4/.m4v/.mov er bætt við.";
 "Choose Folder…" = "Velja möppu…";
 "Choose the folder where cleaned files and subtitles are saved" = "Veldu möppuna þar sem hreinsaðar skrár og skjátexti vistast";
+"Choose which audio track you hear ( A switches )" = "Veldu hvaða hljóðrás þú heyrir ( A skiptir )";
 "Cleaned and re-timed" = "Hreinsaður og tímastilltur";
 "Cleans up and trims video files for Plex and Jellyfin media servers." = "Hreinsar og klippir myndskrár fyrir Plex- og Jellyfin-miðlunarþjóna.";
 "Clear Cuts" = "Hreinsa klippingar";
@@ -155,6 +158,7 @@
 "Keyframe %lld of %lld" = "Lykilrammi %lld af %lld";
 "Keyframes (click to snap)" = "Lykilrammar (smelltu til að festa)";
 "Keyframes could not be read" = "Ekki tókst að lesa lykilramma";
+"Languages" = "Tungumál";
 "Languages set" = "Tungumál stillt";
 "License" = "Leyfi";
 "Listen in Player" = "Hlusta í spilaranum";
@@ -178,10 +182,12 @@
 "Mode" = "Hamur";
 "More Languages" = "Fleiri tungumál";
 "Move Cuts to Keyframes" = "Færa klippingar á lykilramma";
+"Move down" = "Færa niður";
 "Move every cut where a kept part starts to the nearest keyframe — then nothing is re-encoded" = "Færa hverja klippingu þar sem varðveittur hluti hefst á næsta lykilramma — þá er ekkert endurkóðað";
 "Move the original to the Trash after converting" = "Færa frumritið í ruslið eftir umbreytingu";
 "Move the sound %@ ms" = "Færa hljóðið %@ ms";
 "Move the track so that it starts at the playhead" = "Færa rásina svo hún hefjist við spilunarhausinn";
+"Move up" = "Færa upp";
 "Moved the original to the Trash: %@" = "Frumritið fært í ruslið: %@";
 "MP4/MOV is remuxed to .mkv without re-encoding. MKV is rewritten in place." = "MP4/MOV er endurpakkað í .mkv án endurkóðunar. MKV er endurskrifað á sínum stað.";
 "Name" = "Heiti";
@@ -257,6 +263,7 @@
 "Remove Finished from List" = "Fjarlægja tilbúnar af lista";
 "Remove font and position tags" = "Fjarlægja leturgerðar- og staðsetningarmerki";
 "Remove from List" = "Fjarlægja af lista";
+"Remove from the list" = "Fjarlægja af listanum";
 "Remove languages" = "Fjarlægja tungumál";
 "Remove the selected files from the list (the files are not deleted)" = "Fjarlægja valdar skrár af listanum (skránum er ekki eytt)";
 "Remove Track" = "Fjarlægja rás";
@@ -294,6 +301,7 @@
 "Show or hide the log for the selected file" = "Sýna eða fela atvikaskrá valdrar skráar";
 "Show or hide tracks and settings" = "Sýna eða fela rásir og stillingar";
 "Show the whole file ( 0 )" = "Sýna alla skrána ( 0 )";
+"Shown first in every language menu; all other languages are under “More Languages”. The suggestion is based on the app's language and your region." = "Birtist fyrst í öllum tungumálavalmyndum; önnur tungumál eru undir „Fleiri tungumál“. Tillagan byggir á tungumáli forritsins og svæðinu þínu.";
 "Skip removed" = "Sleppa fjarlægðu";
 "Skipped: %@" = "Sleppt: %@";
 "Skipping s%lld (image-based %@, cannot become .srt)" = "Sleppi s%lld (myndbyggður %@, getur ekki orðið .srt)";
@@ -317,6 +325,7 @@
 "The file cannot be played" = "Ekki er hægt að spila skrána";
 "The file is still being written" = "Enn er verið að skrifa skrána";
 "The file is still being written (size is changing) — skipping" = "Enn er verið að skrifa skrána (stærðin breytist) — sleppi";
+"The File's Tracks" = "Rásir skrárinnar";
 "The offset changes by up to %@ s during the film — the dub probably comes from a different edit (e.g. a TV version). Check it by listening." = "Hliðrunin breytist um allt að %@ s í myndinni — talsetningin kemur líklega úr annarri útgáfu (t.d. sjónvarpsútgáfu). Athugaðu með því að hlusta.";
 "The result file is empty — the original is untouched" = "Niðurstöðuskráin er tóm — frumritið er óbreytt";
 "The target already exists" = "Markskráin er þegar til";
@@ -338,6 +347,7 @@
 "Unknown (und)" = "Óþekkt (und)";
 "Unknown language" = "Óþekkt tungumál";
 "Use mkvtoolnix for MKV files" = "Nota mkvtoolnix fyrir MKV-skrár";
+"Use Suggestion" = "Nota tillöguna";
 "Video" = "Myndskeið";
 "VideoCleaner on GitHub" = "VideoCleaner á GitHub";
 "Visible: %@" = "Sýnilegt: %@";

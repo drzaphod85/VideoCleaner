@@ -19,6 +19,8 @@ final class PlayerController {
     /// Plays an added audio track in sync with the video (the film's own sound is muted meanwhile).
     let audioPlayer = AVPlayer()
     var previewTrack: AddedAudio?
+    /// When one of the film's own tracks (other than the one in the preview) is being listened to: its stream index.
+    var listeningStream: Int?
     var audioPreview: AudioPreview = .off
     enum AudioPreview: Equatable { case off, preparing(Double), ready, failed(String) }
 
@@ -157,6 +159,7 @@ final class PlayerController {
     /// Starts (or stops, with nil) listening to an added track. Also call it after the track's offset,
     /// speed or trims changed, so the sound follows at once.
     func setPreviewTrack(_ track: AddedAudio?, tools: ToolPaths) {
+        listeningStream = nil
         guard let track else {
             audioLoadTask?.cancel()
             previewTrack = nil

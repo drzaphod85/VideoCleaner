@@ -60,9 +60,6 @@ public enum Languages {
         .init(code2: "ms", code3: "msa", alternatives: ["may"], name: "Malay"),
     ]
 
-    /// Number of entries from `all` that are shown directly in menus (the rest go under "More languages").
-    public static let commonCount = 11
-
     private static let lookup: [String: LanguageInfo] = {
         var map: [String: LanguageInfo] = [:]
         for lang in all {
@@ -114,6 +111,73 @@ public enum Languages {
             return name.prefix(1).uppercased() + name.dropFirst()
         }
         return lookup[c]?.name ?? c.uppercased()
+    }
+
+    // MARK: Favorites
+
+    static let nordicRegions: Set<String> = ["SE", "NO", "DK", "FI", "IS", "AX", "FO", "GL", "SJ"]
+
+    /// Languages shown first in language menus, suggested from the app's language and the user's region:
+    /// in the Nordic countries the Nordic languages plus English and German; elsewhere the region's own
+    /// language plus the big European ones. The app's language always comes first.
+    public static func defaultFavorites(appLanguage: String, region: String?) -> [String] {
+        var list: [String]
+        let r = region?.uppercased()
+        if let r, nordicRegions.contains(r) {
+            list = ["swe", "nor", "dan", "fin", "isl", "eng", "deu"]
+        } else {
+            list = ["eng"]
+            if let r, let lang = Locale.Language(identifier: "und-\(r)").maximalIdentifier.split(separator: "-").first {
+                list.append(normalized3(String(lang)))
+            }
+            list += ["fra", "deu", "spa", "ita"]
+        }
+        list.insert(normalized3(appLanguage), at: 0)
+        var seen = Set<String>()
+        return list.filter { $0 != "und" && seen.insert($0).inserted }
+    }
+
+    // MARK: Guessing from file names
+
+    /// Short words that are also language codes but far more often mean something else in file names.
+    private static let ambiguousCodes: Set<String> = [
+        "is", "it", "no", "to", "in", "on", "at", "be", "me", "we", "he", "so", "do", "my", "an", "or", "as",
+        "us", "id", "ca", "hi", "ta", "te", "et", "ms", "the", "and", "for", "tv", "hd", "uk",
+    ]
+
+    private static let nameLookup: [String: String] = {
+        var map: [String: String] = [:]
+        let locales = ["en", "sv", "da", "nb", "fi", "is", "de", "fr", "es", "it", "nl"]
+        for lang in all {
+            map[lang.name.lowercased()] = lang.code3
+            for l in locales {
+                if let n = Locale(identifier: l).localizedString(forLanguageCode: lang.code2) {
+                    map[n.lowercased()] = lang.code3
+                }
+            }
+            if let native = Locale(identifier: lang.code2).localizedString(forLanguageCode: lang.code2) {
+                map[native.lowercased()] = lang.code3
+            }
+        }
+        // Common extras seen in release and recording names
+        map["swedish"] = "swe"; map["svensk"] = "swe"; map["svenskt"] = "swe"; map["svtal"] = "swe"
+        map["dansk"] = "dan"; map["norsk"] = "nor"; map["suomi"] = "fin"; map["deutsch"] = "deu"
+        return map
+    }()
+
+    /// Guesses the language from a file name such as "Film.svenska.TV.ac3" or "Movie.2019.SWE.dts".
+    public static func guess(fromFileName name: String) -> String? {
+        let stem = (name as NSString).deletingPathExtension
+        let tokens = stem.split(whereSeparator: { !$0.isLetter }).map { String($0) }
+        for t in tokens.reversed() {
+            if let code = nameLookup[t.lowercased()] { return code }
+        }
+        for t in tokens.reversed() {
+            let lower = t.lowercased()
+            guard (2...3).contains(lower.count), !ambiguousCodes.contains(lower), let info = lookup[lower] else { continue }
+            return info.code3
+        }
+        return nil
     }
 
     /// Parses a user-entered list like "sv, en" or "swe eng;de" into normalized three-letter codes.

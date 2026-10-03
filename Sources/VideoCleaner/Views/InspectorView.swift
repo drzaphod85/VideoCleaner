@@ -191,6 +191,25 @@ struct TrackRow: View {
     }
 }
 
+/// Favorite languages first (Settings › Languages), all others under "More Languages".
+struct LanguageMenuItems: View {
+    @Environment(AppModel.self) private var model
+    let onSelect: (String) -> Void
+
+    var body: some View {
+        let favorites = model.favoriteLanguages
+        ForEach(favorites, id: \.self) { code in
+            Button(Languages.displayName(code)) { onSelect(code) }
+        }
+        Menu("More Languages") {
+            ForEach(Languages.all.filter { !favorites.contains($0.code3) }
+                .sorted { Languages.displayName($0.code3) < Languages.displayName($1.code3) }) { lang in
+                Button(Languages.displayName(lang.code3)) { onSelect(lang.code3) }
+            }
+        }
+    }
+}
+
 struct LanguageMenu: View {
     let item: VideoItem
     let stream: StreamInfo
@@ -199,14 +218,7 @@ struct LanguageMenu: View {
         let current = item.language(of: stream)
         let overridden = item.languageOverrides[stream.index] != nil
         Menu {
-            ForEach(Languages.all.prefix(Languages.commonCount)) { lang in
-                Button(Languages.displayName(lang.code3)) { item.setLanguage(lang.code3, for: stream) }
-            }
-            Menu("More Languages") {
-                ForEach(Languages.all.dropFirst(Languages.commonCount).sorted { Languages.displayName($0.code3) < Languages.displayName($1.code3) }) { lang in
-                    Button(Languages.displayName(lang.code3)) { item.setLanguage(lang.code3, for: stream) }
-                }
-            }
+            LanguageMenuItems { item.setLanguage($0, for: stream) }
             Divider()
             Button("Unknown (und)") { item.setLanguage("und", for: stream) }
             if overridden {
@@ -362,6 +374,14 @@ struct SettingsView: View {
                     Button("Search Again") { model.refreshTools() }
                 }
             }
+            Section {
+                FavoriteLanguagesEditor()
+            } header: {
+                Text("Languages")
+            } footer: {
+                Text("Shown first in every language menu; all other languages are under “More Languages”. The suggestion is based on the app's language and your region.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             Section("Preview") {
                 LabeledContent("Cache", value: TimeFormat.byteCount(cacheSize))
                 Text("MKV files are copied (without re-encoding) to a temporary MP4 so they can be shown. The cache is emptied when the app quits.")
@@ -384,7 +404,52 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 520)
+        .frame(width: 520, height: 640)
         .onAppear { cacheSize = PreviewService.shared.cacheSize() }
+    }
+}
+
+/// Ordered list of favorite languages with add, remove, reorder and reset.
+struct FavoriteLanguagesEditor: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        let favorites = model.favoriteLanguages
+        ForEach(Array(favorites.enumerated()), id: \.element) { i, code in
+            HStack {
+                Text(Languages.displayName(code))
+                Text(verbatim: code).font(.caption.monospaced()).foregroundStyle(.tertiary)
+                Spacer()
+                Button { move(i, by: -1) } label: { Image(systemName: "chevron.up") }
+                    .disabled(i == 0).help("Move up")
+                Button { move(i, by: 1) } label: { Image(systemName: "chevron.down") }
+                    .disabled(i == favorites.count - 1).help("Move down")
+                Button { model.favoriteLanguages.remove(at: i) } label: { Image(systemName: "minus.circle") }
+                    .help("Remove from the list")
+            }
+            .buttonStyle(.borderless)
+        }
+        HStack {
+            Menu {
+                ForEach(Languages.all.filter { !favorites.contains($0.code3) }
+                    .sorted { Languages.displayName($0.code3) < Languages.displayName($1.code3) }) { lang in
+                    Button(Languages.displayName(lang.code3)) { model.favoriteLanguages.append(lang.code3) }
+                }
+            } label: {
+                Label("Add Language", systemImage: "plus")
+            }
+            .fixedSize()
+            Spacer()
+            Button("Use Suggestion") { model.favoriteLanguages = AppModel.suggestedFavorites }
+                .disabled(favorites == AppModel.suggestedFavorites)
+        }
+    }
+
+    private func move(_ i: Int, by d: Int) {
+        var list = model.favoriteLanguages
+        let j = i + d
+        guard list.indices.contains(j) else { return }
+        list.swapAt(i, j)
+        model.favoriteLanguages = list
     }
 }
