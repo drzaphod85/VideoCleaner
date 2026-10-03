@@ -434,6 +434,7 @@ struct AudioTrackMenu: View {
                     Text(label(current, info: info)).lineLimit(1)
                     if case .preparing(let p) = model.player.audioPreview {
                         ProgressView(value: p).frame(width: 40).controlSize(.mini)
+                        Text(L("preparing %lld %%", Int(p * 100))).foregroundStyle(.secondary).monospacedDigit()
                     }
                 }
                 .font(.callout)

@@ -361,7 +361,8 @@ final class AppModel {
             if index == info.audioStreams.first?.index {
                 player.setPreviewTrack(nil, tools: tools)
             } else if let s = info.audioStreams.first(where: { $0.index == index }) {
-                player.setPreviewTrack(AddedAudio(source: item.url, stream: s, sourceDuration: info.duration), tools: tools)
+                player.setPreviewTrack(AddedAudio(source: item.url, stream: s, sourceDuration: info.duration),
+                                       siblings: info.audioStreams.dropFirst().map(\.index), tools: tools)
                 player.listeningStream = index
             }
         case .added(let id):

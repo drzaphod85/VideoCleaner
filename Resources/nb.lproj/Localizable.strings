@@ -377,3 +377,4 @@
 "⛔ Cancelled — temporary files removed" = "⛔ Avbrutt — midlertidige filer fjernet";
 "✂︎ Cutting away: %@ (at keyframes, no re-encoding)" = "✂︎ Kutter bort: %@ (ved keyframes, ingen omkoding)";
 "✂︎ Cutting away: %@ (frame-exact, re-encoding video)" = "✂︎ Kutter bort: %@ (bildenøyaktig, omkoder video)";
+"preparing %lld %%" = "forbereder %lld %%";

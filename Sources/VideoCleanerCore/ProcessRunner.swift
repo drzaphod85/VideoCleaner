@@ -87,13 +87,16 @@ private final class ProcessState: @unchecked Sendable {
 public enum ProcessRunner {
     /// Runs an external tool. Cancelling the calling task terminates the process and throws `CancellationError`.
     /// `onStdoutData` receives raw stdout bytes as they arrive (for large binary output such as decoded audio);
-    /// set `keepStdout` to false to not also collect them in memory.
+    /// set `keepStdout` to false to not also collect them in memory. Background work can pass a lower
+    /// `qualityOfService`.
     public static func run(_ executable: URL, _ arguments: [String],
                            onStdoutLine: (@Sendable (String) -> Void)? = nil,
                            onStderrLine: (@Sendable (String) -> Void)? = nil,
                            onStdoutData: (@Sendable (Data) -> Void)? = nil,
-                           keepStdout: Bool = true) async throws -> CommandResult {
+                           keepStdout: Bool = true,
+                           qualityOfService: QualityOfService = .default) async throws -> CommandResult {
         let process = Process()
+        process.qualityOfService = qualityOfService
         process.executableURL = executable
         process.arguments = arguments
         process.standardInput = FileHandle.nullDevice

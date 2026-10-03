@@ -377,3 +377,4 @@
 "⛔ Cancelled — temporary files removed" = "⛔ Keskeytetty — väliaikaiset tiedostot poistettu";
 "✂︎ Cutting away: %@ (at keyframes, no re-encoding)" = "✂︎ Leikataan pois: %@ (avainkuvista, ei uudelleenkoodausta)";
 "✂︎ Cutting away: %@ (frame-exact, re-encoding video)" = "✂︎ Leikataan pois: %@ (ruudun tarkasti, video koodataan uudelleen)";
+"preparing %lld %%" = "valmistellaan %lld %%";

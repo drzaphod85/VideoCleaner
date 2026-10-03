@@ -81,30 +81,105 @@ final class PreviewService {
         return (out, transcode ? .transcode : .remux)
     }
 
-    /// A stereo AAC copy of one audio stream, for listening to an added track in the player.
-    func prepareAudio(url: URL, streamIndex: Int, duration: Double, tools: ToolPaths,
-                      progress: @escaping @MainActor (Double) -> Void) async throws -> URL {
-        guard let ffmpeg = tools.ffmpeg else { throw ProcessingError.missingTool("ffmpeg") }
-        let key = cacheKey(url: url, transcode: false) + "-a\(streamIndex)"
-        let out = cacheDir.appendingPathComponent("\(key).m4a")
-        if FileManager.default.fileExists(atPath: out.path) { return out }
-        try FileManager.default.createDirectory(at: cacheDir, withIntermediateDirectories: true)
-        let part = cacheDir.appendingPathComponent("\(key).part.m4a")
-        defer { try? FileManager.default.removeItem(at: part) }
-        let total = max(duration, 1)
-        let r = try await ProcessRunner.run(ffmpeg, [
-            "-hide_banner", "-nostdin", "-y", "-loglevel", "error", "-progress", "pipe:1", "-nostats",
-            "-i", url.path, "-map", "0:\(streamIndex)", "-vn", "-sn", "-dn", "-ac", "2", "-c:a", "aac", "-b:a", "160k",
-            "-f", "mp4", part.path]) { line in
-                guard line.hasPrefix("out_time_us="), let us = Double(line.dropFirst(12)) else { return }
-                let value = min(1, max(0, us / 1_000_000 / total))
-                Task { @MainActor in progress(value) }
+    /// Stereo AAC copies of audio streams, for listening to other tracks than the preview's own in the player.
+    /// All streams of a file are made in one ffmpeg pass, since reading a large file is what takes time: asking
+    /// for one stream starts (or joins) a job for every stream in `streams` not cached yet. Switching to another
+    /// track never cancels the job. `progress` reports the job that makes the wanted stream.
+    func prepareAudio(url: URL, streamIndex: Int, streams: [Int]? = nil, duration: Double, tools: ToolPaths,
+                      background: Bool = false,
+                      progress: @escaping @MainActor (Double) -> Void = { _ in }) async throws -> URL {
+        let wanted = audioURL(url, streamIndex)
+        if FileManager.default.fileExists(atPath: wanted.path) { return wanted }
+        let jobKey = "\(url.path)#\(streamIndex)"
+        let job: AudioJob
+        if let running = audioJobs[jobKey] {
+            job = running
+        } else {
+            guard let ffmpeg = tools.ffmpeg else { throw ProcessingError.missingTool("ffmpeg") }
+            let missing = Set((streams ?? []) + [streamIndex]).sorted()
+                .filter { audioJobs["\(url.path)#\($0)"] == nil && !FileManager.default.fileExists(atPath: audioURL(url, $0).path) }
+            job = AudioJob()
+            for s in missing { audioJobs["\(url.path)#\(s)"] = job }
+            job.task = Task { [weak self] in
+                defer { for s in missing where self?.audioJobs["\(url.path)#\(s)"] === job { self?.audioJobs["\(url.path)#\(s)"] = nil } }
+                try await self?.extractAudio(url: url, streams: missing, duration: duration, ffmpeg: ffmpeg,
+                                             background: background) { p in job.report(p) }
             }
+        }
+        let token = job.listen(progress)
+        defer { job.stopListening(token) }
+        try await job.task?.value
+        guard FileManager.default.fileExists(atPath: wanted.path) else {
+            throw ProcessingError.failed(L("Could not prepare the audio for listening: %@", "a\(streamIndex)"))
+        }
+        return wanted
+    }
+
+    /// Starts making listening copies of the given streams in the background (e.g. all but the first when a
+    /// file with several audio tracks is opened), so switching tracks in the player is immediate.
+    func prefetchAudio(url: URL, streams: [Int], duration: Double, tools: ToolPaths) {
+        guard let first = streams.first(where: { !FileManager.default.fileExists(atPath: audioURL(url, $0).path) }) else { return }
+        Task { _ = try? await prepareAudio(url: url, streamIndex: first, streams: streams, duration: duration,
+                                           tools: tools, background: true) }
+    }
+
+    /// Progress (0…1) of a running listening-copy job for a stream, nil when none is running.
+    func audioProgress(url: URL, streamIndex: Int) -> Double? {
+        audioJobs["\(url.path)#\(streamIndex)"]?.progress
+    }
+
+    func isAudioReady(url: URL, streamIndex: Int) -> Bool {
+        FileManager.default.fileExists(atPath: audioURL(url, streamIndex).path)
+    }
+
+    private func audioURL(_ url: URL, _ streamIndex: Int) -> URL {
+        cacheDir.appendingPathComponent(cacheKey(url: url, transcode: false) + "-a\(streamIndex).m4a")
+    }
+
+    private func extractAudio(url: URL, streams: [Int], duration: Double, ffmpeg: URL, background: Bool,
+                              progress: @escaping @MainActor (Double) -> Void) async throws {
+        guard !streams.isEmpty else { return }
+        try FileManager.default.createDirectory(at: cacheDir, withIntermediateDirectories: true)
+        let outputs = streams.map { (audioURL(url, $0), cacheDir.appendingPathComponent(UUID().uuidString + ".part.m4a")) }
+        defer { for (_, part) in outputs { try? FileManager.default.removeItem(at: part) } }
+        var args = ["-hide_banner", "-nostdin", "-y", "-loglevel", "error", "-progress", "pipe:1", "-nostats", "-i", url.path]
+        for (s, (_, part)) in zip(streams, outputs) {
+            args += ["-map", "0:\(s)", "-vn", "-sn", "-dn", "-ac", "2", "-c:a", "aac", "-b:a", "160k", "-f", "mp4", part.path]
+        }
+        let total = max(duration, 1)
+        let r = try await ProcessRunner.run(ffmpeg, args, onStdoutLine: { line in
+            guard line.hasPrefix("out_time_us="), let us = Double(line.dropFirst(12)) else { return }
+            let value = min(1, max(0, us / 1_000_000 / total))
+            Task { @MainActor in progress(value) }
+        }, qualityOfService: background ? .utility : .userInitiated)
         guard r.status == 0 else {
             throw ProcessingError.failed(L("Could not prepare the audio for listening: %@", r.stderr.trimmingCharacters(in: .whitespacesAndNewlines)))
         }
-        try FileManager.default.moveItem(at: part, to: out)
-        return out
+        for (out, part) in outputs { try? FileManager.default.moveItem(at: part, to: out) }
+    }
+
+    private var audioJobs: [String: AudioJob] = [:]
+
+    /// One ffmpeg run making listening copies; several callers can wait for it and follow its progress.
+    @MainActor
+    private final class AudioJob {
+        var task: Task<Void, Error>?
+        private(set) var progress: Double = 0
+        private var listeners: [UUID: @MainActor (Double) -> Void] = [:]
+
+        func report(_ p: Double) {
+            progress = p
+            listeners.values.forEach { $0(p) }
+        }
+
+        func listen(_ f: @escaping @MainActor (Double) -> Void) -> UUID {
+            let id = UUID()
+            listeners[id] = f
+            f(progress)
+            return id
+        }
+
+        func stopListening(_ id: UUID) { listeners[id] = nil }
     }
 
     private func cacheKey(url: URL, transcode: Bool) -> String {

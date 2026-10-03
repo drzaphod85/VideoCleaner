@@ -377,3 +377,4 @@
 "⛔ Cancelled — temporary files removed" = "⛔ Hætt við — tímabundnum skrám eytt";
 "✂︎ Cutting away: %@ (at keyframes, no re-encoding)" = "✂︎ Klippi burt: %@ (við lykilramma, engin endurkóðun)";
 "✂︎ Cutting away: %@ (frame-exact, re-encoding video)" = "✂︎ Klippi burt: %@ (rammanákvæmt, endurkóðar myndskeið)";
+"preparing %lld %%" = "undirbý %lld %%";

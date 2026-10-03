@@ -135,6 +135,11 @@ final class PlayerController {
             }
             player.replaceCurrentItem(with: item)
             thumbnails = ThumbnailProvider(url: playURL)
+            // Make the other audio tracks ready for listening now, in one pass, so switching is immediate
+            let others = info.audioStreams.dropFirst().map(\.index)
+            if !others.isEmpty {
+                PreviewService.shared.prefetchAudio(url: url, streams: others, duration: info.duration, tools: tools)
+            }
             if currentTime > 0 { seek(to: currentTime) }
         } catch is CancellationError {
         } catch {
@@ -158,17 +163,15 @@ final class PlayerController {
     // MARK: Listening to an added track
 
     /// Starts (or stops, with nil) listening to an added track. Also call it after the track's offset,
-    /// speed or trims changed, so the sound follows at once.
-    func setPreviewTrack(_ track: AddedAudio?, tools: ToolPaths) {
+    /// speed or trims changed, so the sound follows at once. `siblings`: the file's other audio streams, made
+    /// ready in the same pass when `track` is one of the file's own streams.
+    func setPreviewTrack(_ track: AddedAudio?, siblings: [Int]? = nil, tools: ToolPaths) {
         listeningStream = nil
         guard let track else {
             audioLoadTask?.cancel()
             previewTrack = nil
             audioPreview = .off
-            audioPlayer.pause()
-            audioPlayer.replaceCurrentItem(with: nil)
-            audioSource = nil
-            player.isMuted = false
+            stopAudio()
             return
         }
         previewTrack = track
@@ -178,15 +181,20 @@ final class PlayerController {
             return
         }
         audioLoadTask?.cancel()
-        audioPreview = .preparing(0)
+        // Never keep playing the previous track while the new one is prepared: the film's own sound plays meanwhile
+        stopAudio()
         let source = track.source, stream = track.streamIndex, duration = track.sourceDuration
+        let ready = PreviewService.shared.isAudioReady(url: source, streamIndex: stream)
+        audioPreview = ready ? .preparing(1) : .preparing(PreviewService.shared.audioProgress(url: source, streamIndex: stream) ?? 0)
         audioLoadTask = Task {
             do {
-                let url = try await PreviewService.shared.prepareAudio(url: source, streamIndex: stream, duration: duration,
-                                                                      tools: tools) { [weak self] p in
-                    if case .preparing = self?.audioPreview { self?.audioPreview = .preparing(p) }
+                let url = try await PreviewService.shared.prepareAudio(url: source, streamIndex: stream, streams: siblings,
+                                                                      duration: duration, tools: tools) { [self] p in
+                    guard previewTrack?.source == source, previewTrack?.streamIndex == stream,
+                          case .preparing = audioPreview else { return }
+                    audioPreview = .preparing(p)
                 }
-                guard !Task.isCancelled, previewTrack?.source == source else { return }
+                guard !Task.isCancelled, previewTrack?.source == source, previewTrack?.streamIndex == stream else { return }
                 let item = AVPlayerItem(url: url)
                 item.audioTimePitchAlgorithm = .varispeed   // slower also means lower, like the speed correction
                 audioPlayer.replaceCurrentItem(with: item)
@@ -196,9 +204,18 @@ final class PlayerController {
                 syncAudio(force: true)
             } catch is CancellationError {
             } catch {
+                guard previewTrack?.source == source, previewTrack?.streamIndex == stream else { return }
                 audioPreview = .failed(error.localizedDescription)
             }
         }
+    }
+
+    private func stopAudio() {
+        audioPlayer.pause()
+        audioPlayer.replaceCurrentItem(with: nil)
+        audioSource = nil
+        audioHoldUntil = .distantPast
+        player.isMuted = false
     }
 
     /// Keeps the added track's sound where the video is: source time = (movie time − offset) / stretch.
