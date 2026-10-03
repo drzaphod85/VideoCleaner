@@ -40,8 +40,10 @@ struct AddedTrackView: View {
         if followsLanguage { item.addedAudio[i].title = code == "und" ? "" : Languages.displayName(code) }
     }
 
-    private func binding<T>(_ key: WritableKeyPath<AddedAudio, T>) -> Binding<T> {
-        Binding(get: { item.addedAudio.first { $0.id == trackID }![keyPath: key] },
+    /// The track may disappear while the view is still on screen (removed, or added to the file by processing):
+    /// fall back to the last known value instead of crashing.
+    private func binding<T>(_ key: WritableKeyPath<AddedAudio, T>, _ fallback: AddedAudio) -> Binding<T> {
+        Binding(get: { (item.addedAudio.first { $0.id == trackID } ?? fallback)[keyPath: key] },
                 set: { v in if let i = index { item.addedAudio[i][keyPath: key] = v } })
     }
 
@@ -82,7 +84,7 @@ struct AddedTrackView: View {
     private func editor(_ t: AddedAudio) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                TextField("Name", text: binding(\.title), prompt: Text(Languages.displayName(t.language)))
+                TextField("Name", text: binding(\.title, t), prompt: Text(Languages.displayName(t.language)))
                     .textFieldStyle(.roundedBorder)
                 Toggle("Default track", isOn: Binding(
                     get: { t.isDefault },
@@ -100,19 +102,28 @@ struct AddedTrackView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 4) {
                         Text("Offset").frame(width: 70, alignment: .leading)
-                        TextField("", value: binding(\.offset), format: .number.precision(.fractionLength(3)))
+                        TextField("", value: binding(\.offset, t), format: .number.precision(.fractionLength(3)))
                             .textFieldStyle(.roundedBorder).frame(width: 80).multilineTextAlignment(.trailing)
                         Text(verbatim: "s").foregroundStyle(.secondary)
-                        Spacer(minLength: 2)
+                    }
+                    HStack(spacing: 4) {
+                        Spacer().frame(width: 70)
                         ForEach([-0.1, -0.01, 0.01, 0.1], id: \.self) { step in
-                            Button(String(format: "%+.0f", step * 1000)) { binding(\.offset).wrappedValue += step }
-                                .controlSize(.mini)
-                                .help(L("Move the sound %@ ms", String(format: "%+.0f", step * 1000)))
+                            Button {
+                                binding(\.offset, t).wrappedValue += step
+                            } label: {
+                                Text(verbatim: String(format: "%+.0f", step * 1000).replacingOccurrences(of: "-", with: "−"))
+                                    .monospacedDigit()
+                                    .frame(minWidth: 30)
+                            }
+                            .fixedSize()
+                            .help(L("Move the sound %@ ms", String(format: "%+.0f", step * 1000)))
                         }
+                        Text(verbatim: "ms").font(.caption).foregroundStyle(.secondary)
                     }
                     HStack(spacing: 4) {
                         Text("Speed").frame(width: 70, alignment: .leading)
-                        Picker("", selection: binding(\.stretch)) {
+                        Picker("", selection: binding(\.stretch, t)) {
                             ForEach(AddedAudio.knownStretches, id: \.ratio) { s in
                                 Text(s.ratio == 1 ? L("Unchanged") : s.label).tag(s.ratio)
                             }
@@ -127,34 +138,40 @@ struct AddedTrackView: View {
                     HStack(spacing: 6) {
                         Text("Starts").frame(width: 70, alignment: .leading)
                         Text(TimeFormat.string(max(0, t.movieRange.start))).monospacedDigit()
-                        Spacer()
+                    }
+                    HStack(spacing: 6) {
+                        Spacer().frame(width: 70)
                         Button("Place Start Here") {
                             // Move the whole track so its first sound plays at the playhead
-                            binding(\.offset).wrappedValue = model.player.currentTime - t.trimStart * t.stretch
+                            binding(\.offset, t).wrappedValue = model.player.currentTime - t.trimStart * t.stretch
                         }
                         .help("Move the track so that it starts at the playhead")
                         Button("Cut Before Here") {
-                            binding(\.trimStart).wrappedValue = max(0, min(t.sourceTime(ofMovie: model.player.currentTime),
+                            binding(\.trimStart, t).wrappedValue = max(0, min(t.sourceTime(ofMovie: model.player.currentTime),
                                                                            (t.trimEnd ?? t.sourceDuration) - 1))
                         }
                         .help("Drop the track's sound before the playhead (e.g. a channel ident) without moving the rest")
                     }
+                    .fixedSize()
                     HStack(spacing: 6) {
                         Text("Ends").frame(width: 70, alignment: .leading)
                         Text(TimeFormat.string(t.movieRange.end)).monospacedDigit()
-                        Spacer()
+                    }
+                    HStack(spacing: 6) {
+                        Spacer().frame(width: 70)
                         Button("Cut After Here") {
-                            binding(\.trimEnd).wrappedValue = min(t.sourceDuration,
+                            binding(\.trimEnd, t).wrappedValue = min(t.sourceDuration,
                                                                   max(t.sourceTime(ofMovie: model.player.currentTime), t.trimStart + 1))
                         }
                         .help("Drop the track's sound after the playhead")
                         if t.trimStart > 0 || t.trimEnd != nil {
                             Button("Reset") {
-                                binding(\.trimStart).wrappedValue = 0
-                                binding(\.trimEnd).wrappedValue = nil
+                                binding(\.trimStart, t).wrappedValue = 0
+                                binding(\.trimEnd, t).wrappedValue = nil
                             }
                         }
                     }
+                    .fixedSize()
                 }
                 .controlSize(.small)
                 .font(.callout)

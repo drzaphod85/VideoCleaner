@@ -87,9 +87,23 @@ final class AppModel {
         if panel.runModal() == .OK { add(urls: panel.urls) }
     }
 
+    /// Audio files dropped on the window or the app icon are added as audio tracks to the selected film.
+    static let audioExtensions: Set<String> = ["ac3", "eac3", "ec3", "dts", "dtshd", "thd", "mka", "aac", "m4a", "mp3",
+                                               "flac", "wav", "opus", "ogg", "oga", "wma", "mp2", "mlp"]
+
     func add(urls: [URL]) {
+        let audio = urls.filter { Self.audioExtensions.contains($0.pathExtension.lowercased()) }
+        if !audio.isEmpty {
+            if let item = selectedItem, item.info != nil {
+                for url in audio { addAudioTrack(from: url, to: item) }
+            } else {
+                showAlert(L("Select a film first"), L("Audio files are added as audio tracks to the selected film. Select one film in the list and drop the audio file again."))
+            }
+        }
+        let videos = urls.filter { !Self.audioExtensions.contains($0.pathExtension.lowercased()) }
+        guard !videos.isEmpty else { return }
         Task {
-            let files = await Task.detached { FileScanner.videoFiles(in: urls) }.value
+            let files = await Task.detached { FileScanner.videoFiles(in: videos) }.value
             let existing = Set(items.map { $0.url.standardizedFileURL.path })
             let newItems = files.filter { !existing.contains($0.standardizedFileURL.path) }.map(VideoItem.init)
             guard !newItems.isEmpty else { return }
@@ -282,6 +296,11 @@ final class AppModel {
         panel.allowedContentTypes = types
         panel.directoryURL = item.url.deletingLastPathComponent()
         guard panel.runModal() == .OK, let url = panel.url else { return }
+        addAudioTrack(from: url, to: item)
+    }
+
+    /// Adds the audio of a file to the item (asks which track when the file has several).
+    func addAudioTrack(from url: URL, to item: VideoItem) {
         let tools = self.tools
         Task {
             do {

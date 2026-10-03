@@ -46,7 +46,8 @@ final class PlayerController {
     @ObservationIgnored private var seekInFlight = false
     @ObservationIgnored private var audioLoadTask: Task<Void, Never>?
     @ObservationIgnored private var audioSource: (URL, Int)?
-    @ObservationIgnored private var audioSeeking = false
+    /// After (re)scheduling the audio, leave it alone until it is actually playing.
+    @ObservationIgnored private var audioHoldUntil = Date.distantPast
     @ObservationIgnored private var pendingSeek: (Double, Bool)?
 
     init() {
@@ -201,38 +202,43 @@ final class PlayerController {
     }
 
     /// Keeps the added track's sound where the video is: source time = (movie time − offset) / stretch.
+    /// Both players are tied to the host clock: the audio player is told to be at a given source time at a given
+    /// host time a moment from now, computed from the video's own timebase — so they run in lockstep.
     private func syncAudio(force: Bool) {
-        guard let t = previewTrack, audioPreview == .ready, audioPlayer.currentItem != nil, !audioSeeking else { return }
+        guard let t = previewTrack, audioPreview == .ready, let audioItem = audioPlayer.currentItem,
+              audioItem.status == .readyToPlay else { return }
         let src = t.sourceTime(ofMovie: currentTime)
         let inside = src >= t.trimStart && src < (t.trimEnd ?? t.sourceDuration)
-        guard isPlaying && inside else {
+        guard isPlaying && inside, let videoBase = player.currentItem?.timebase else {
             if audioPlayer.rate != 0 { audioPlayer.pause() }
+            audioHoldUntil = .distantPast
             return
         }
+        if !force && Date() < audioHoldUntil { return }
+
+        // Compare both players at the same host-clock instant
+        let host = CMClockGetHostTimeClock()
+        let hostNow = CMClockGetTime(host)
+        let videoNow = CMSyncConvertTime(hostNow, from: host, to: videoBase).seconds
+        let expected = t.sourceTime(ofMovie: videoNow)
+        let audioNow = audioItem.timebase.map { CMSyncConvertTime(hostNow, from: host, to: $0).seconds }
+            ?? audioPlayer.currentTime().seconds
         let rate = Float(1 / t.stretch)
-        let drift = abs(audioPlayer.currentTime().seconds - src)
-        if force || drift > 0.06 || audioPlayer.rate == 0 {
-            audioSeeking = true
-            audioPlayer.pause()
-            audioPlayer.seek(to: CMTime(seconds: src, preferredTimescale: 48_000), toleranceBefore: .zero,
-                             toleranceAfter: .zero) { [weak self] _ in
-                DispatchQueue.main.async {
-                    MainActor.assumeIsolated {
-                        guard let self else { return }
-                        self.audioSeeking = false
-                        if self.isPlaying, let t = self.previewTrack {
-                            // Re-aim at where the video is now (it moved on while seeking)
-                            let now = t.sourceTime(ofMovie: self.player.currentTime().seconds)
-                            if abs(now - src) > 0.02 {
-                                self.audioPlayer.seek(to: CMTime(seconds: now, preferredTimescale: 48_000),
-                                                      toleranceBefore: .zero, toleranceAfter: .zero)
-                            }
-                            self.audioPlayer.rate = rate
-                        }
-                    }
-                }
-            }
-        }
+        guard force || audioPlayer.rate == 0 || abs(audioNow - expected) > 0.025 else { return }
+
+        let lead = 0.12   // start a moment ahead so the audio player has time to get there
+        let videoThen = videoNow + lead * Double(CMTimebaseGetRate(videoBase))
+        audioPlayer.setRate(rate, time: CMTime(seconds: t.sourceTime(ofMovie: videoThen), preferredTimescale: 48_000),
+                            atHostTime: CMTimeAdd(hostNow, CMTime(seconds: lead, preferredTimescale: 1_000_000_000)))
+        audioHoldUntil = Date().addingTimeInterval(lead + 0.4)
+    }
+
+    /// For diagnostics: how far the added track's sound is from where it should be (seconds, + = ahead).
+    var audioSyncError: Double? {
+        guard let t = previewTrack, let a = audioPlayer.currentItem?.timebase, let v = player.currentItem?.timebase,
+              audioPlayer.rate != 0 else { return nil }
+        let host = CMClockGetHostTimeClock(), now = CMClockGetTime(host)
+        return CMSyncConvertTime(now, from: host, to: a).seconds - t.sourceTime(ofMovie: CMSyncConvertTime(now, from: host, to: v).seconds)
     }
 
     // MARK: Transport
@@ -289,3 +295,4 @@ final class PlayerController {
         }
     }
 }
+

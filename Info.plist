@@ -30,6 +30,8 @@
 				<!-- Every movie type (AVI, WMV, MPEG, TS, WebM… all conform to public.movie) plus Matroska -->
 				<string>public.movie</string>
 				<string>org.matroska.mkv</string>
+				<!-- Audio files are added as audio tracks to the selected film -->
+				<string>public.audio</string>
 			</array>
 		</dict>
 		<dict>
