@@ -42,6 +42,7 @@
 "All subtitles are removed from the video file." = "Kaikki tekstitykset poistetaan videotiedostosta.";
 "At least one audio track is always kept." = "Vähintään yksi ääniraita säilytetään aina.";
 "Audio" = "Ääni";
+"Audio files are added as audio tracks to the selected film. Select one film in the list and drop the audio file again." = "Äänitiedostot lisätään valitun elokuvan ääniraidoiksi. Valitse luettelosta yksi elokuva ja pudota äänitiedosto uudelleen.";
 "Audio track %lld (%@): copied, starts at %@" = "Ääniraita %lld (%@): kopioidaan, alkaa kohdasta %@";
 "Audio track %lld (%@): re-encoded to %@ (%@)" = "Ääniraita %lld (%@): koodataan uudelleen muotoon %@ (%@)";
 "Audio Tracks" = "Ääniraidat";
@@ -292,6 +293,7 @@
 "Search Again" = "Hae uudelleen";
 "Select a file in the list to cut it and choose tracks." = "Valitse luettelosta tiedosto leikataksesi sitä ja valitaksesi raidat.";
 "Select a file to see and choose audio and subtitle tracks." = "Valitse tiedosto nähdäksesi ja valitaksesi ääni- ja tekstitysraidat.";
+"Select a film first" = "Valitse ensin elokuva";
 "Select languages" = "Valitse kielet";
 "Select this subtitle" = "Valitse tämä tekstitys";
 "Selected subtitles are kept in the video file, the rest are removed." = "Valitut tekstitykset säilytetään videotiedostossa, muut poistetaan.";

@@ -42,6 +42,7 @@
 "All subtitles are removed from the video file." = "Alle undertekster fjernes fra videofilen.";
 "At least one audio track is always kept." = "Minst ett lydspor beholdes alltid.";
 "Audio" = "Lyd";
+"Audio files are added as audio tracks to the selected film. Select one film in the list and drop the audio file again." = "Lydfiler legges til som lydspor på den valgte filmen. Velg en film i listen og slipp lydfilen på nytt.";
 "Audio track %lld (%@): copied, starts at %@" = "Lydspor %lld (%@): kopieres, starter ved %@";
 "Audio track %lld (%@): re-encoded to %@ (%@)" = "Lydspor %lld (%@): omkodes til %@ (%@)";
 "Audio Tracks" = "Lydspor";
@@ -292,6 +293,7 @@
 "Search Again" = "Søk på nytt";
 "Select a file in the list to cut it and choose tracks." = "Velg en fil i listen for å kutte og velge spor.";
 "Select a file to see and choose audio and subtitle tracks." = "Velg en fil for å se og velge lyd- og undertekstspor.";
+"Select a film first" = "Velg en film først";
 "Select languages" = "Velg språk";
 "Select this subtitle" = "Velg underteksten";
 "Selected subtitles are kept in the video file, the rest are removed." = "Valgte undertekster beholdes i videofilen, resten fjernes.";

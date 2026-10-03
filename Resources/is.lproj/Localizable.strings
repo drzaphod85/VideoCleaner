@@ -42,6 +42,7 @@
 "All subtitles are removed from the video file." = "Allur skjátexti er fjarlægður úr myndskránni.";
 "At least one audio track is always kept." = "Að minnsta kosti einni hljóðrás er alltaf haldið.";
 "Audio" = "Hljóð";
+"Audio files are added as audio tracks to the selected film. Select one film in the list and drop the audio file again." = "Hljóðskrám er bætt við sem hljóðrásum á valda mynd. Veldu eina mynd á listanum og slepptu hljóðskránni aftur.";
 "Audio track %lld (%@): copied, starts at %@" = "Hljóðrás %lld (%@): afrituð, hefst við %@";
 "Audio track %lld (%@): re-encoded to %@ (%@)" = "Hljóðrás %lld (%@): endurkóðuð í %@ (%@)";
 "Audio Tracks" = "Hljóðrásir";
@@ -292,6 +293,7 @@
 "Search Again" = "Leita aftur";
 "Select a file in the list to cut it and choose tracks." = "Veldu skrá á listanum til að klippa hana og velja rásir.";
 "Select a file to see and choose audio and subtitle tracks." = "Veldu skrá til að sjá og velja hljóð- og skjátextarásir.";
+"Select a film first" = "Veldu fyrst mynd";
 "Select languages" = "Velja tungumál";
 "Select this subtitle" = "Velja þennan skjátexta";
 "Selected subtitles are kept in the video file, the rest are removed." = "Völdum skjátexta er haldið í myndskránni, öðrum er eytt.";
