@@ -27,10 +27,9 @@
 			<key>LSHandlerRank</key><string>Alternate</string>
 			<key>LSItemContentTypes</key>
 			<array>
+				<!-- Every movie type (AVI, WMV, MPEG, TS, WebM… all conform to public.movie) plus Matroska -->
+				<string>public.movie</string>
 				<string>org.matroska.mkv</string>
-				<string>public.mpeg-4</string>
-				<string>com.apple.m4v-video</string>
-				<string>com.apple.quicktime-movie</string>
 			</array>
 		</dict>
 		<dict>

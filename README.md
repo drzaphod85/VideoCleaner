@@ -8,6 +8,8 @@
 - 🔊 **Audio tracks** — remove tracks by language (e.g. `de, ru`) or one by one. At least one track is always kept.
 - 🏷️ **Languages** — set or fix track languages (tracks tagged `und` are highlighted). A "language tags only" mode changes MKV files in place in seconds.
 - 📦 **Container** — convert to MKV with one checkbox, or keep the original format.
+- 📼 **Old formats** — AVI (DivX/Xvid), WMV/ASF, FLV, MPEG/VOB, TS/M2TS, WebM, OGM, 3GP, RealMedia and DV are converted to MKV *without re-encoding* (missing timestamps rebuilt, packed DivX B-frames unpacked) — the easy way to give a media server an old collection in one modern container.
+- 🎧 **Add audio tracks** — take an audio track from another file (e.g. a Swedish dub from a TV recording or another release), synchronize it automatically against the film's own sound (offset and frame-rate speed difference, found with Accelerate FFTs), adjust by hand, and listen in the player before you process.
 - 🗂️ **Batch** — open single files, several files, a folder, or a folder full of subfolders — drag them onto the window or the app icon in the Dock. Every file gets its own cuts and track choices; the rules in the sidebar apply to all of them.
 - 🧪 **Dry run** — "Show Commands" lists exactly which `ffmpeg`/`mkvmerge` commands would run.
 

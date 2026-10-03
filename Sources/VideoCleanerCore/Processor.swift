@@ -105,6 +105,8 @@ private final class Run: @unchecked Sendable {
     /// Re-encode the video (frame-exact cuts). Decided in execute().
     var reencode = false
     var keyframes: [Double] = []
+    /// B-frame reordering delay of the video (see Probe.decodeDelay).
+    var decodeDelay = 0.0
 
     init(job: ProcessingJob, tools: ToolPaths, dryRun: Bool, log: @escaping @Sendable (LogEntry) -> Void,
          progress: @escaping @Sendable (Double) -> Void) {
@@ -118,6 +120,9 @@ private final class Run: @unchecked Sendable {
     var stem: String { input.deletingPathExtension().lastPathComponent }
     var inExt: String { input.pathExtension.lowercased() }
     var useMKVToolNix: Bool { opts.useMKVToolNix && tools.hasMKVToolNix && inExt == "mkv" }
+    var isLegacy: Bool { FileScanner.isLegacy(input) }
+    /// Older containers (AVI, MPEG-PS, TS…) often lack timestamps on some packets: let ffmpeg rebuild them.
+    var inputFlags: [String] { isLegacy ? ["-fflags", "+genpts"] : [] }
 
     func log(_ kind: LogEntry.Kind, _ text: String) { logHandler(LogEntry(kind, text)) }
 
@@ -144,11 +149,17 @@ private final class Run: @unchecked Sendable {
             return ProcessingResult(output: input, skippedReason: L("The file is still being written"))
         }
 
-        if opts.languageOnly { return try await languageOnly(ffmpeg: ffmpeg) }
+        if opts.languageOnly {
+            if isLegacy {
+                log(.warning, L("Language tags cannot be set in .%@ files — process the file normally to convert it to MKV", inExt))
+                return ProcessingResult(output: input, skippedReason: L("Language tags need MKV"))
+            }
+            return try await languageOnly(ffmpeg: ffmpeg)
+        }
 
         guard let video = info.primaryVideo else { throw ProcessingError.failed(L("No video found — skipping")) }
 
-        let outExt = opts.convertToMKV ? "mkv" : inExt
+        let outExt = (opts.convertToMKV || isLegacy) ? "mkv" : inExt
         let outIsMKV = outExt == "mkv"
         let outDir = opts.outputDirectory.map { URL(fileURLWithPath: $0, isDirectory: true) }
             ?? input.deletingLastPathComponent()
@@ -179,7 +190,9 @@ private final class Run: @unchecked Sendable {
         var keptSubs: [StreamInfo] = []
         if !opts.removeSubtitlesFromVideo {
             for s in info.subtitleStreams where job.selectedSubtitles.contains(s.index) {
-                if !outIsMKV && !s.isTextSubtitle {
+                if s.codec == "dvb_teletext" {
+                    log(.warning, L("Teletext subtitle s%lld cannot be stored in the video file — removed", s.ordinal + 1))
+                } else if !outIsMKV && !s.isTextSubtitle {
                     log(.warning, L("Image subtitle s%lld (%@) cannot be kept in .%@ — removed", s.ordinal + 1, s.codec, outExt))
                 } else {
                     keptSubs.append(s)
@@ -204,6 +217,9 @@ private final class Run: @unchecked Sendable {
             }
             reencode = true
             plan = CutPlan(removals: job.removals, duration: info.duration, keyframes: keyframes, precise: true)
+        }
+        if plan.isCutting && !reencode && !dryRun {
+            decodeDelay = await Probe.decodeDelay(input, info: info, tools: tools)
         }
         if plan.isCutting {
             guard !plan.segments.isEmpty else { throw ProcessingError.failed(L("The whole file is marked as removed")) }
@@ -379,13 +395,13 @@ private final class Run: @unchecked Sendable {
         }
 
         if !viaFF.isEmpty {
-            var args = Self.common + ["-i", input.path]
+            var args = Self.common + inputFlags + ["-i", input.path]
             for t in viaFF { args += ["-map", "0:\(t.stream.index)", "-c:s", "srt", "-f", "srt", t.raw.path] }
             let r = try await exec(ffmpeg, args)
             if r.status != 0 {
                 log(.warning, L("Combined extraction failed — trying track by track"))
                 for t in viaFF {
-                    let one = Self.common + ["-i", input.path, "-map", "0:\(t.stream.index)", "-c:s", "srt",
+                    let one = Self.common + inputFlags + ["-i", input.path, "-map", "0:\(t.stream.index)", "-c:s", "srt",
                                              "-f", "srt", t.raw.path]
                     let r1 = try await exec(ffmpeg, one)
                     if r1.status != 0 { log(.warning, L("Failed to extract s%lld", t.stream.ordinal + 1)) }
@@ -470,6 +486,8 @@ private final class Run: @unchecked Sendable {
             if let l = job.languages[s.index] { a += ["-metadata:s:s:\(pos)", "language=\(l)"] }
         }
         a += ["-c", "copy"]
+        // DivX/Xvid AVIs often store B-frames "packed", which Matroska players cannot show; unpack them
+        if video.codec == "mpeg4" && !(reencode && cutting) { a += ["-bsf:v", "mpeg4_unpack_bframes"] }
         var videoCodec = video.codec
         if reencode && cutting {
             a += encoderArgs(video: video)
@@ -519,16 +537,23 @@ private final class Run: @unchecked Sendable {
                     // Fast input seek to the keyframe before, then an exact output-side trim. This also trims the
                     // copied audio, which would otherwise start at the keyframe (sound before the first picture).
                     let kf = Cuts.keyframe(atOrBefore: seek, in: keyframes) ?? 0
-                    a += ["-ss", String(format: "%.6f", kf), "-i", input.path, "-ss", String(format: "%.6f", seek - kf)]
+                    a += inputFlags + ["-ss", String(format: "%.6f", kf), "-i", input.path, "-ss", String(format: "%.6f", seek - kf)]
                 } else {
-                    // Seek a little past the keyframe (but before the next one): with B-frames, ffmpeg's Matroska
-                    // seek otherwise lands one keyframe too early when the target is exactly on a keyframe.
-                    let next = Cuts.nextKeyframe(after: seg.start, in: keyframes) ?? info.duration
-                    seek = seg.start + min(0.5, max(0.0005, (next - seg.start) * 0.4))
-                    a += ["-ss", String(format: "%.6f", seek), "-i", input.path]
+                    // Fast input seek to a few seconds before the keyframe, then an output-side start at it.
+                    // Seeking straight to the keyframe is not reliable: Matroska with B-frames and MPEG-PS/TS
+                    // (no index) land one keyframe too early. With stream copy the output starts at the first
+                    // keyframe whose *decode* time is at or after the output-side start, so start just before the
+                    // keyframe's decode time (B-frames: a few frames before its display time).
+                    let previous = Cuts.previousKeyframe(before: seg.start, in: keyframes) ?? 0
+                    let margin = min(decodeDelay + 0.001, max(0.001, (seg.start - previous) * 0.5))
+                    seek = seg.start - margin
+                    let pre = max(0, seg.start - 3)
+                    if pre > 0 { a += inputFlags + ["-ss", String(format: "%.6f", pre), "-i", input.path] }
+                    else { a += inputFlags + ["-i", input.path] }
+                    a += ["-ss", String(format: "%.6f", seek - pre)]
                 }
             } else {
-                a += ["-i", input.path]
+                a += inputFlags + ["-i", input.path]
             }
             if seg.end < info.duration - 0.01 { a += ["-t", String(format: "%.6f", seg.end - seek)] }
             return a + base + [output.path]

@@ -47,8 +47,9 @@ final class PreviewService {
         let part = cacheDir.appendingPathComponent("\(key).part.mp4")
         defer { try? FileManager.default.removeItem(at: part) }
 
-        var args = ["-hide_banner", "-nostdin", "-y", "-loglevel", "error", "-progress", "pipe:1", "-nostats",
-                    "-i", url.path, "-map", "0:\(v.index)"]
+        var args = ["-hide_banner", "-nostdin", "-y", "-loglevel", "error", "-progress", "pipe:1", "-nostats"]
+        if FileScanner.isLegacy(url) { args += ["-fflags", "+genpts"] }
+        args += ["-i", url.path, "-map", "0:\(v.index)"]
         if let a = info.audioStreams.first { args += ["-map", "0:\(a.index)"] }
         if transcode {
             args += ["-c:v", "h264_videotoolbox", "-b:v", "5M", "-vf", "scale=-2:'min(720,ih)',format=yuv420p",

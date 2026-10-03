@@ -63,7 +63,7 @@
 "Choose" = "Velja";
 "Choose an audio file, or a video file to take an audio track from." = "Veldu hljóðskrá, eða myndskrá til að taka hljóðrás úr.";
 "Choose Audio Track" = "Veldu hljóðrás";
-"Choose files, a folder or a folder with subfolders — every .mkv/.mp4/.m4v/.mov is added." = "Veldu skrár, möppu eða möppu með undirmöppum — öllum .mkv/.mp4/.m4v/.mov er bætt við.";
+"Choose files, a folder or a folder with subfolders — every video file is added (MKV, MP4, MOV, AVI, WMV, MPEG, TS…)." = "Veldu skrár, möppu eða möppu með undirmöppum — öllum myndskrám er bætt við (MKV, MP4, MOV, AVI, WMV, MPEG, TS…).";
 "Choose Folder…" = "Velja möppu…";
 "Choose the folder where cleaned files and subtitles are saved" = "Veldu möppuna þar sem hreinsaðar skrár og skjátexti vistast";
 "Choose which audio track you hear ( A switches )" = "Veldu hvaða hljóðrás þú heyrir ( A skiptir )";
@@ -158,6 +158,8 @@
 "Keyframe %lld of %lld" = "Lykilrammi %lld af %lld";
 "Keyframes (click to snap)" = "Lykilrammar (smelltu til að festa)";
 "Keyframes could not be read" = "Ekki tókst að lesa lykilramma";
+"Language tags cannot be set in .%@ files — process the file normally to convert it to MKV" = "Ekki er hægt að stilla tungumálamerki í .%@-skrám — vinndu skrána venjulega til að umbreyta henni í MKV";
+"Language tags need MKV" = "Tungumálamerki krefjast MKV";
 "Languages" = "Tungumál";
 "Languages set" = "Tungumál stillt";
 "License" = "Leyfi";
@@ -319,6 +321,7 @@
 "Synchronize Automatically" = "Samstilla sjálfvirkt";
 "synchronized" = "samstillt";
 "tags removed" = "merki fjarlægð";
+"Teletext subtitle s%lld cannot be stored in the video file — removed" = "Textavarpsskjátexta s%lld er ekki hægt að vista í myndskránni — fjarlægður";
 "text" = "texti";
 "The audio is too short to synchronize" = "Hljóðið er of stutt til að samstilla";
 "The cut at %@ is between keyframes — the video is re-encoded so the cut is exact (takes longer)" = "Klippingin við %@ er á milli lykilramma — myndskeiðið er endurkóðað svo klippingin verði nákvæm (tekur lengri tíma)";

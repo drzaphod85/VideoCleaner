@@ -63,7 +63,7 @@
 "Choose" = "Velg";
 "Choose an audio file, or a video file to take an audio track from." = "Velg en lydfil, eller en videofil å hente et lydspor fra.";
 "Choose Audio Track" = "Velg lydspor";
-"Choose files, a folder or a folder with subfolders — every .mkv/.mp4/.m4v/.mov is added." = "Velg filer, en mappe eller en mappe med undermapper — alle .mkv/.mp4/.m4v/.mov legges til.";
+"Choose files, a folder or a folder with subfolders — every video file is added (MKV, MP4, MOV, AVI, WMV, MPEG, TS…)." = "Velg filer, en mappe eller en mappe med undermapper — alle videofiler legges til (MKV, MP4, MOV, AVI, WMV, MPEG, TS…).";
 "Choose Folder…" = "Velg mappe…";
 "Choose the folder where cleaned files and subtitles are saved" = "Velg mappen der de rensede filene og undertekstene lagres";
 "Choose which audio track you hear ( A switches )" = "Velg hvilket lydspor du hører ( A bytter )";
@@ -158,6 +158,8 @@
 "Keyframe %lld of %lld" = "Keyframe %lld av %lld";
 "Keyframes (click to snap)" = "Keyframes (klikk for å feste)";
 "Keyframes could not be read" = "Keyframes kunne ikke leses";
+"Language tags cannot be set in .%@ files — process the file normally to convert it to MKV" = "Språkmerker kan ikke settes i .%@-filer — behandle filen som vanlig for å konvertere den til MKV";
+"Language tags need MKV" = "Språkmerker krever MKV";
 "Languages" = "Språk";
 "Languages set" = "Språk satt";
 "License" = "Lisens";
@@ -319,6 +321,7 @@
 "Synchronize Automatically" = "Synkroniser automatisk";
 "synchronized" = "synkronisert";
 "tags removed" = "merker fjernet";
+"Teletext subtitle s%lld cannot be stored in the video file — removed" = "Tekst-TV-undertekst s%lld kan ikke lagres i videofilen — fjernes";
 "text" = "tekst";
 "The audio is too short to synchronize" = "Lyden er for kort til å synkronisere";
 "The cut at %@ is between keyframes — the video is re-encoded so the cut is exact (takes longer)" = "Kuttet ved %@ ligger mellom keyframes — videoen omkodes slik at kuttet blir nøyaktig (tar lengre tid)";

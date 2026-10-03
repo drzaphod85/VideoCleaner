@@ -72,13 +72,14 @@ final class AppModel {
         let panel = NSOpenPanel()
         panel.title = L("Open Video Files or Folders")
         panel.prompt = L("Open")
-        panel.message = L("Choose files, a folder or a folder with subfolders — every .mkv/.mp4/.m4v/.mov is added.")
+        panel.message = L("Choose files, a folder or a folder with subfolders — every video file is added (MKV, MP4, MOV, AVI, WMV, MPEG, TS…).")
         panel.canChooseFiles = true
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = true
-        var types: [UTType] = [.mpeg4Movie, .quickTimeMovie, .movie]
-        if let mkv = UTType(filenameExtension: "mkv") { types.append(mkv) }
-        if let m4v = UTType(filenameExtension: "m4v") { types.append(m4v) }
+        var types: [UTType] = [.movie]
+        for ext in FileScanner.videoExtensions.sorted() {
+            if let t = UTType(filenameExtension: ext) { types.append(t) }
+        }
         panel.allowedContentTypes = types
         if panel.runModal() == .OK { add(urls: panel.urls) }
     }

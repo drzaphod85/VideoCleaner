@@ -111,11 +111,30 @@ public enum Probe {
         return parseKeyframes(r.stdout, startTime: info.startTime)
     }
 
+    /// How much earlier than its display time a keyframe is decoded (B-frame reordering delay), measured on
+    /// the first keyframes of the file. 0 for streams without B-frames.
+    public static func decodeDelay(_ url: URL, info: MediaInfo, tools: ToolPaths) async -> Double {
+        guard let ffprobe = tools.ffprobe, let video = info.primaryVideo else { return 0 }
+        let args = ["-v", "error", "-select_streams", "\(video.index)", "-read_intervals", "%+60",
+                    "-show_entries", "packet=pts_time,dts_time,flags", "-of", "csv=p=0", url.path]
+        guard let r = try? await ProcessRunner.run(ffprobe, args), r.status == 0 else { return 0 }
+        var delay = 0.0
+        r.stdout.enumerateLines { line, _ in
+            let f = line.split(separator: ",", omittingEmptySubsequences: false)
+            guard f.count >= 3, f.dropFirst(2).contains(where: { $0.contains("K") && $0.allSatisfy { "KDC_".contains($0) } }),
+                  let pts = Double(f[0]), let dts = Double(f[1]) else { return }
+            delay = max(delay, pts - dts)
+        }
+        return min(delay, 1)
+    }
+
     static func parseKeyframes(_ csv: String, startTime: Double) -> [Double] {
         var times: [Double] = []
         csv.enumerateLines { line, _ in
             let f = line.split(separator: ",", omittingEmptySubsequences: false)
-            guard f.count >= 2, f[f.count - 1].contains("K") else { return }
+            // The flags field ("K__", "K_D"…) is not always last: MPEG-TS adds an empty side-data field
+            guard f.count >= 2, f.dropFirst(2).contains(where: { $0.contains("K") && $0.allSatisfy { "KDC_".contains($0) } })
+            else { return }
             if let t = Double(f[0]) ?? Double(f[1]) { times.append(max(0, t - startTime)) }
         }
         times.sort()

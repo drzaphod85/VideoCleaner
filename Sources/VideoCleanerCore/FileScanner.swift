@@ -4,7 +4,16 @@
 import Foundation
 
 public enum FileScanner {
-    public static let videoExtensions: Set<String> = ["mkv", "mp4", "m4v", "mov"]
+    /// Containers that are kept as they are (or converted to MKV when asked).
+    public static let modernExtensions: Set<String> = ["mkv", "mp4", "m4v", "mov"]
+    /// Older containers: always converted to MKV (losslessly — the streams are copied).
+    public static let legacyExtensions: Set<String> = [
+        "avi", "divx", "xvid", "wmv", "asf", "flv", "f4v", "mpg", "mpeg", "m2v", "vob", "ts", "m2ts", "mts",
+        "webm", "ogm", "ogv", "3gp", "3g2", "rm", "rmvb", "dv",
+    ]
+    public static let videoExtensions = modernExtensions.union(legacyExtensions)
+
+    public static func isLegacy(_ url: URL) -> Bool { legacyExtensions.contains(url.pathExtension.lowercased()) }
 
     public static func isVideo(_ url: URL) -> Bool {
         videoExtensions.contains(url.pathExtension.lowercased()) && !url.lastPathComponent.hasPrefix(".")

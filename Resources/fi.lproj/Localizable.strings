@@ -63,7 +63,7 @@
 "Choose" = "Valitse";
 "Choose an audio file, or a video file to take an audio track from." = "Valitse äänitiedosto tai videotiedosto, josta ääniraita otetaan.";
 "Choose Audio Track" = "Valitse ääniraita";
-"Choose files, a folder or a folder with subfolders — every .mkv/.mp4/.m4v/.mov is added." = "Valitse tiedostoja, kansio tai kansio alikansioineen — kaikki .mkv/.mp4/.m4v/.mov lisätään.";
+"Choose files, a folder or a folder with subfolders — every video file is added (MKV, MP4, MOV, AVI, WMV, MPEG, TS…)." = "Valitse tiedostoja, kansio tai kansio alikansioineen — kaikki videotiedostot lisätään (MKV, MP4, MOV, AVI, WMV, MPEG, TS…).";
 "Choose Folder…" = "Valitse kansio…";
 "Choose the folder where cleaned files and subtitles are saved" = "Valitse kansio, johon puhdistetut tiedostot ja tekstitykset tallennetaan";
 "Choose which audio track you hear ( A switches )" = "Valitse kuultava ääniraita ( A vaihtaa )";
@@ -158,6 +158,8 @@
 "Keyframe %lld of %lld" = "Avainkuva %lld/%lld";
 "Keyframes (click to snap)" = "Avainkuvat (kiinnitä napsauttamalla)";
 "Keyframes could not be read" = "Avainkuvia ei voitu lukea";
+"Language tags cannot be set in .%@ files — process the file normally to convert it to MKV" = "Kielitunnisteita ei voi asettaa .%@-tiedostoihin — käsittele tiedosto tavalliseen tapaan muuntaaksesi sen MKV:ksi";
+"Language tags need MKV" = "Kielitunnisteet vaativat MKV:n";
 "Languages" = "Kielet";
 "Languages set" = "Kielet asetettu";
 "License" = "Lisenssi";
@@ -319,6 +321,7 @@
 "Synchronize Automatically" = "Synkronoi automaattisesti";
 "synchronized" = "synkronoitu";
 "tags removed" = "tunnisteet poistettu";
+"Teletext subtitle s%lld cannot be stored in the video file — removed" = "Teksti-tv-tekstitystä s%lld ei voi tallentaa videotiedostoon — poistetaan";
 "text" = "teksti";
 "The audio is too short to synchronize" = "Ääni on liian lyhyt synkronoitavaksi";
 "The cut at %@ is between keyframes — the video is re-encoded so the cut is exact (takes longer)" = "Leikkaus kohdassa %@ on avainkuvien välissä — video koodataan uudelleen, jotta leikkaus on tarkka (kestää kauemmin)";
