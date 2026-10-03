@@ -50,6 +50,7 @@
 "Automatic Synchronization" = "Automatisk synkronisering";
 "Between keyframes" = "Mellem keyframes";
 "brew install mkvtoolnix (optional)" = "brew install mkvtoolnix (valgfrit)";
+"Built in, LGPL 2.1 or later. VideoCleaner uses a newer installed ffmpeg (e.g. from Homebrew) automatically." = "Indbygget, LGPL 2.1 eller nyere. VideoCleaner bruger automatisk en nyere installeret ffmpeg (f.eks. fra Homebrew).";
 "Cache" = "Cache";
 "Cancel" = "Annuller";
 "Cancel processing (⌘.)" = "Annuller behandlingen (⌘.)";
@@ -124,6 +125,9 @@
 "Extracting (ffmpeg): s%lld %@, language=%@ → %@" = "Udtrækker (ffmpeg): s%lld %@, sprog=%@ → %@";
 "Extracting (mkvextract): s%lld %@, language=%@ → %@" = "Udtrækker (mkvextract): s%lld %@, sprog=%@ → %@";
 "Failed to extract s%lld" = "Kunne ikke udtrække s%lld";
+"ffmpeg %@ · built in" = "ffmpeg %@ · indbygget";
+"ffmpeg %@ · chosen in Settings" = "ffmpeg %@ · valgt i Indstillinger";
+"ffmpeg %@ · installed (newer than the built-in)" = "ffmpeg %@ · installeret (nyere end den indbyggede)";
 "ffmpeg failed: %@" = "ffmpeg mislykkedes: %@";
 "ffmpeg was not found" = "ffmpeg blev ikke fundet";
 "ffmpeg/ffprobe — install with: brew install ffmpeg" = "ffmpeg/ffprobe — installér med: brew install ffmpeg";
@@ -211,6 +215,7 @@
 "No video found — skipping" = "Ingen video fundet — springer over";
 "No video to show" = "Ingen video at vise";
 "none" = "ingen";
+"Not included. Used when installed (GPL 2) — gives cleaner MKV remuxing." = "Medfølger ikke. Bruges, hvis det er installeret (GPL 2) — giver renere MKV-ompakning.";
 "Nothing else is touched — no cutting, extraction or cleaning. MKV files are changed in place in seconds." = "Intet andet røres — ingen klipning, udtrækning eller rensning. MKV-filer ændres på stedet på sekunder.";
 "Nothing to change — no languages were edited" = "Intet at ændre — ingen sprog er redigeret";
 "Off: the file keeps its original format (MP4 stays MP4)" = "Fra: filen beholder sit oprindelige format (MP4 forbliver MP4)";
@@ -308,6 +313,7 @@
 "Skipped: %@" = "Sprunget over: %@";
 "Skipping s%lld (image-based %@, cannot become .srt)" = "Springer s%lld over (billedbaseret %@, kan ikke blive .srt)";
 "Snap to keyframes" = "Fastgør til keyframes";
+"Source Code" = "Kildekode";
 "Speed" = "Hastighed";
 "speed corrected" = "hastighed korrigeret";
 "Start mark" = "Startmarkering";
@@ -336,6 +342,7 @@
 "The track has no language — choose one" = "Sporet mangler sprog — vælg et";
 "The whole file" = "Hele filen";
 "The whole file is marked as removed" = "Hele filen er markeret som fjernet";
+"Third-Party Software" = "Tredjepartssoftware";
 "timing shifted" = "tidsjusteret";
 "Tools" = "Værktøjer";
 "Tools (leave empty to search automatically)" = "Værktøjer (lad stå tomt for automatisk søgning)";

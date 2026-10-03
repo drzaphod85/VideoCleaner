@@ -50,6 +50,7 @@
 "Automatic Synchronization" = "Automatisk synkronisering";
 "Between keyframes" = "Mellan keyframes";
 "brew install mkvtoolnix (optional)" = "brew install mkvtoolnix (valfritt)";
+"Built in, LGPL 2.1 or later. VideoCleaner uses a newer installed ffmpeg (e.g. from Homebrew) automatically." = "Inbyggd, LGPL 2.1 eller senare. VideoCleaner använder automatiskt en nyare installerad ffmpeg (t.ex. från Homebrew).";
 "Cache" = "Cache";
 "Cancel" = "Avbryt";
 "Cancel processing (⌘.)" = "Avbryt bearbetningen (⌘.)";
@@ -124,6 +125,9 @@
 "Extracting (ffmpeg): s%lld %@, language=%@ → %@" = "Extraherar (ffmpeg): s%lld %@, språk=%@ → %@";
 "Extracting (mkvextract): s%lld %@, language=%@ → %@" = "Extraherar (mkvextract): s%lld %@, språk=%@ → %@";
 "Failed to extract s%lld" = "Misslyckades extrahera s%lld";
+"ffmpeg %@ · built in" = "ffmpeg %@ · inbyggd";
+"ffmpeg %@ · chosen in Settings" = "ffmpeg %@ · vald i Inställningar";
+"ffmpeg %@ · installed (newer than the built-in)" = "ffmpeg %@ · installerad (nyare än den inbyggda)";
 "ffmpeg failed: %@" = "ffmpeg misslyckades: %@";
 "ffmpeg was not found" = "ffmpeg hittades inte";
 "ffmpeg/ffprobe — install with: brew install ffmpeg" = "ffmpeg/ffprobe — installera med: brew install ffmpeg";
@@ -211,6 +215,7 @@
 "No video found — skipping" = "Ingen video hittad — hoppar";
 "No video to show" = "Ingen video att visa";
 "none" = "inga";
+"Not included. Used when installed (GPL 2) — gives cleaner MKV remuxing." = "Ingår inte. Används om det är installerat (GPL 2) — ger renare MKV-ompaketering.";
 "Nothing else is touched — no cutting, extraction or cleaning. MKV files are changed in place in seconds." = "Inget annat rörs — ingen klippning, extraktion eller rensning. MKV ändras på plats på sekunder.";
 "Nothing to change — no languages were edited" = "Inget att ändra — inga språk har redigerats";
 "Off: the file keeps its original format (MP4 stays MP4)" = "Av: filen behåller sitt ursprungliga format (MP4 förblir MP4)";
@@ -308,6 +313,7 @@
 "Skipped: %@" = "Hoppad: %@";
 "Skipping s%lld (image-based %@, cannot become .srt)" = "Hoppar s%lld (bildbaserad %@, kan inte bli .srt)";
 "Snap to keyframes" = "Fäst mot keyframes";
+"Source Code" = "Källkod";
 "Speed" = "Hastighet";
 "speed corrected" = "hastighet korrigerad";
 "Start mark" = "Startmarkering";
@@ -336,6 +342,7 @@
 "The track has no language — choose one" = "Spåret saknar språk — välj ett";
 "The whole file" = "Hela filen";
 "The whole file is marked as removed" = "Hela filen är markerad som borttagen";
+"Third-Party Software" = "Programvara från tredje part";
 "timing shifted" = "tidsjusterad";
 "Tools" = "Verktyg";
 "Tools (leave empty to search automatically)" = "Verktyg (lämna tomt för automatisk sökning)";

@@ -53,10 +53,13 @@ final class AppModel {
         favoriteLanguages = d.stringArray(forKey: Prefs.favoriteLanguages) ?? Self.suggestedFavorites
         let overrides = d.dictionary(forKey: Prefs.toolOverrides) as? [String: String] ?? [:]
         toolOverrides = overrides
-        tools = ToolPaths.locate(overrides: overrides)
+        tools = ToolPaths.locate(overrides: overrides, bundledDirectory: Self.helpersDirectory)
     }
 
-    func refreshTools() { tools = ToolPaths.locate(overrides: toolOverrides) }
+    /// VideoCleaner.app/Contents/Helpers — where the bundled ffmpeg and ffprobe live.
+    static var helpersDirectory: URL { Bundle.main.bundleURL.appendingPathComponent("Contents/Helpers", isDirectory: true) }
+
+    func refreshTools() { tools = ToolPaths.locate(overrides: toolOverrides, bundledDirectory: Self.helpersDirectory) }
 
     var rules: TrackRules {
         TrackRules(subtitleLanguages: Languages.parseList(subtitleLanguagesText),

@@ -50,6 +50,7 @@
 "Automatic Synchronization" = "Automaattinen synkronointi";
 "Between keyframes" = "Avainkuvien välissä";
 "brew install mkvtoolnix (optional)" = "brew install mkvtoolnix (valinnainen)";
+"Built in, LGPL 2.1 or later. VideoCleaner uses a newer installed ffmpeg (e.g. from Homebrew) automatically." = "Sisäänrakennettu, LGPL 2.1 tai uudempi. VideoCleaner käyttää automaattisesti uudempaa asennettua ffmpegiä (esim. Homebrew'sta).";
 "Cache" = "Välimuisti";
 "Cancel" = "Kumoa";
 "Cancel processing (⌘.)" = "Keskeytä käsittely (⌘.)";
@@ -124,6 +125,9 @@
 "Extracting (ffmpeg): s%lld %@, language=%@ → %@" = "Puretaan (ffmpeg): s%lld %@, kieli=%@ → %@";
 "Extracting (mkvextract): s%lld %@, language=%@ → %@" = "Puretaan (mkvextract): s%lld %@, kieli=%@ → %@";
 "Failed to extract s%lld" = "Raidan s%lld purku epäonnistui";
+"ffmpeg %@ · built in" = "ffmpeg %@ · sisäänrakennettu";
+"ffmpeg %@ · chosen in Settings" = "ffmpeg %@ · valittu asetuksissa";
+"ffmpeg %@ · installed (newer than the built-in)" = "ffmpeg %@ · asennettu (uudempi kuin sisäänrakennettu)";
 "ffmpeg failed: %@" = "ffmpeg epäonnistui: %@";
 "ffmpeg was not found" = "ffmpegiä ei löytynyt";
 "ffmpeg/ffprobe — install with: brew install ffmpeg" = "ffmpeg/ffprobe — asenna komennolla: brew install ffmpeg";
@@ -211,6 +215,7 @@
 "No video found — skipping" = "Videota ei löytynyt — ohitetaan";
 "No video to show" = "Ei näytettävää videota";
 "none" = "ei mitään";
+"Not included. Used when installed (GPL 2) — gives cleaner MKV remuxing." = "Ei mukana. Käytetään, jos se on asennettu (GPL 2) — tekee siistimmän MKV-uudelleenpakkauksen.";
 "Nothing else is touched — no cutting, extraction or cleaning. MKV files are changed in place in seconds." = "Mihinkään muuhun ei kosketa — ei leikkausta, purkua tai puhdistusta. MKV-tiedostot muutetaan paikallaan sekunneissa.";
 "Nothing to change — no languages were edited" = "Ei muutettavaa — kieliä ei ole muokattu";
 "Off: the file keeps its original format (MP4 stays MP4)" = "Pois: tiedosto säilyttää alkuperäisen muotonsa (MP4 pysyy MP4:nä)";
@@ -308,6 +313,7 @@
 "Skipped: %@" = "Ohitettu: %@";
 "Skipping s%lld (image-based %@, cannot become .srt)" = "Ohitetaan s%lld (kuvapohjainen %@, ei voi muuntaa .srt:ksi)";
 "Snap to keyframes" = "Kiinnitä avainkuviin";
+"Source Code" = "Lähdekoodi";
 "Speed" = "Nopeus";
 "speed corrected" = "nopeus korjattu";
 "Start mark" = "Alkumerkki";
@@ -336,6 +342,7 @@
 "The track has no language — choose one" = "Raidalta puuttuu kieli — valitse kieli";
 "The whole file" = "Koko tiedosto";
 "The whole file is marked as removed" = "Koko tiedosto on merkitty poistettavaksi";
+"Third-Party Software" = "Kolmannen osapuolen ohjelmistot";
 "timing shifted" = "ajoitus siirretty";
 "Tools" = "Työkalut";
 "Tools (leave empty to search automatically)" = "Työkalut (jätä tyhjäksi automaattista hakua varten)";

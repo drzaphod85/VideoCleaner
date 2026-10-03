@@ -317,7 +317,7 @@ struct OptionsPanel: View {
             .disabled(model.options.languageOnly)
 
             Section {
-                ToolStatus(name: "ffmpeg / ffprobe", ok: model.tools.hasFFmpeg, path: model.tools.ffmpeg?.path,
+                ToolStatus(name: ffmpegTitle, ok: model.tools.hasFFmpeg, path: model.tools.ffmpeg?.path,
                            hint: "brew install ffmpeg")
                 ToolStatus(name: "mkvtoolnix", ok: model.tools.hasMKVToolNix, path: model.tools.mkvmerge?.path,
                            hint: L("brew install mkvtoolnix (optional)"))
@@ -327,6 +327,17 @@ struct OptionsPanel: View {
             } header: { Label("Tools", systemImage: "wrench.and.screwdriver") }
         }
         .formStyle(.grouped)
+    }
+
+    private var ffmpegTitle: String {
+        let t = model.tools
+        guard let v = t.ffmpegVersion else { return "ffmpeg / ffprobe" }
+        switch t.ffmpegSource {
+        case .bundled: return L("ffmpeg %@ · built in", v)
+        case .installed: return L("ffmpeg %@ · installed (newer than the built-in)", v)
+        case .custom: return L("ffmpeg %@ · chosen in Settings", v)
+        case nil: return "ffmpeg \(v)"
+        }
     }
 
     private func languageHint(_ set: Set<String>, empty: String) -> String {
@@ -401,6 +412,30 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
                 LabeledContent("License", value: L("GNU GPL v3.0 or later"))
                 Link(destination: URL(string: "https://github.com/drzaphod85/VideoCleaner")!) { Text(verbatim: "github.com/drzaphod85/VideoCleaner") }
+            }
+            Section("Third-Party Software") {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(verbatim: "FFmpeg" + (model.tools.bundledFFmpegVersion.map { " \($0)" } ?? ""))
+                        .font(.callout.weight(.medium))
+                    Text("Built in, LGPL 2.1 or later. VideoCleaner uses a newer installed ffmpeg (e.g. from Homebrew) automatically.")
+                        .font(.caption).foregroundStyle(.secondary)
+                    HStack {
+                        Link(destination: URL(string: "https://ffmpeg.org")!) { Text(verbatim: "ffmpeg.org") }
+                        if let v = model.tools.bundledFFmpegVersion {
+                            Link("Source Code", destination: URL(string: "https://ffmpeg.org/releases/ffmpeg-\(v).tar.xz")!)
+                        }
+                        if let license = Bundle.main.url(forResource: "LICENSE", withExtension: nil, subdirectory: "ThirdParty/FFmpeg") {
+                            Button("License") { NSWorkspace.shared.open(license) }.buttonStyle(.link)
+                        }
+                    }
+                    .font(.caption)
+                }
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(verbatim: "MKVToolNix").font(.callout.weight(.medium))
+                    Text("Not included. Used when installed (GPL 2) — gives cleaner MKV remuxing.")
+                        .font(.caption).foregroundStyle(.secondary)
+                    Link(destination: URL(string: "https://mkvtoolnix.download")!) { Text(verbatim: "mkvtoolnix.download") }.font(.caption)
+                }
             }
         }
         .formStyle(.grouped)

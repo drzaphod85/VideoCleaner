@@ -29,14 +29,12 @@ UI languages: English, Swedish, Danish, Norwegian (Bokmål), Finnish and Iceland
 ## Requirements
 
 - macOS 15 Sequoia or later (Apple silicon or Intel)
-- [ffmpeg](https://ffmpeg.org) — required
-- [MKVToolNix](https://mkvtoolnix.download) — optional, gives cleaner MKV remuxing and instant in-place language changes
+- Nothing else: **FFmpeg is built in.** If a newer ffmpeg is installed (Homebrew, MacPorts or `PATH`), VideoCleaner uses that one automatically; a specific ffmpeg can be chosen in **Settings**.
+- [MKVToolNix](https://mkvtoolnix.download) — optional, gives cleaner MKV remuxing and instant in-place language changes:
 
 ```bash
-brew install ffmpeg mkvtoolnix
+brew install mkvtoolnix
 ```
-
-The app finds the tools in Homebrew (`/opt/homebrew/bin`, `/usr/local/bin`), MacPorts, `PATH` and the MKVToolNix app bundle. Custom paths can be set in **Settings**.
 
 ## Installing
 
@@ -85,7 +83,8 @@ When every kept part starts on a keyframe, streams are copied and the file is on
 ```bash
 git clone https://github.com/drzaphod85/VideoCleaner.git
 cd VideoCleaner
-Scripts/test.sh                 # unit + end-to-end tests (need ffmpeg; mkvtoolnix optional)
+Scripts/build-ffmpeg.sh         # once: builds the bundled ffmpeg/ffprobe into Vendor/ (a few minutes)
+Scripts/test.sh                 # unit + end-to-end tests (need ffmpeg with libx264 etc., e.g. from Homebrew)
 Scripts/build-app.sh            # → build/VideoCleaner.app (universal)
 Scripts/build-app.sh --dmg      # …and build/VideoCleaner-<version>.dmg
 Scripts/build-app.sh --install  # …and install to ~/Applications
@@ -131,10 +130,17 @@ Scripts/extract-strings.py      # reports missing or unused strings for every la
 
 Contributions and pull requests are welcome.
 
+## Third-party software
+
+- **[FFmpeg](https://ffmpeg.org)** is bundled (`Contents/Helpers/ffmpeg` and `ffprobe`) under the **GNU LGPL 2.1 or later**. It is built from the unmodified release tarball by `Scripts/build-ffmpeg.sh` in an LGPL configuration without external libraries (VideoToolbox and AudioToolbox are used for hardware encoding). The license, source URL, checksum and configure options ship inside the app in `Contents/Resources/ThirdParty/FFmpeg/`, and are shown under Settings › Third-Party Software. FFmpeg is a trademark of Fabrice Bellard.
+- **[MKVToolNix](https://mkvtoolnix.download)** (GPL 2) is *not* bundled; VideoCleaner runs `mkvmerge`, `mkvextract` and `mkvpropedit` when they are installed.
+
+VideoCleaner runs these tools as separate programs; it does not link to them.
+
 ## License
 
 Copyright © 2026 Lasse L (drzaphod85)
 
 VideoCleaner is free software: you can redistribute it and/or modify it under the terms of the **GNU General Public License v3.0** or (at your option) any later version. See [LICENSE](LICENSE).
 
-VideoCleaner runs `ffmpeg` and MKVToolNix as separate programs; they are not bundled and keep their own licenses.
+FFmpeg and MKVToolNix keep their own licenses (see above).

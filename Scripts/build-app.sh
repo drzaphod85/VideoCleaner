@@ -74,7 +74,26 @@ cp LICENSE "$APP/Contents/Resources/LICENSE.txt"
 # Translations go in the main bundle (Bundle.main) so SwiftUI and L() find them
 mkdir -p "$APP/Contents/Resources/en.lproj"
 for lproj in Resources/*.lproj; do cp -R "$lproj" "$APP/Contents/Resources/"; done
+# Bundled ffmpeg/ffprobe (built by Scripts/build-ffmpeg.sh) and their license
+if [ -x Vendor/ffmpeg/ffmpeg ] && [ -x Vendor/ffmpeg/ffprobe ]; then
+    mkdir -p "$APP/Contents/Helpers" "$APP/Contents/Resources/ThirdParty/FFmpeg"
+    cp Vendor/ffmpeg/ffmpeg Vendor/ffmpeg/ffprobe "$APP/Contents/Helpers/"
+    cp Vendor/ffmpeg/LICENSE Vendor/ffmpeg/BUILD_INFO "$APP/Contents/Resources/ThirdParty/FFmpeg/"
+    echo "▸ Bundling FFmpeg $(cat Vendor/ffmpeg/VERSION)"
+else
+    echo "  (no bundled ffmpeg — run Scripts/build-ffmpeg.sh to include one)"
+fi
 xattr -cr "$APP"
+
+# Sign nested helpers first (hardened runtime + timestamp are required for notarization)
+for HELPER in "$APP"/Contents/Helpers/*; do
+    [ -e "$HELPER" ] || continue
+    if [ "$SIGN_IDENTITY" = "-" ]; then
+        codesign --force --sign - "$HELPER"
+    else
+        codesign --force --options runtime --timestamp --sign "$SIGN_IDENTITY" "$HELPER"
+    fi
+done
 
 if [ "$SIGN_IDENTITY" = "-" ]; then
     echo "▸ Signing (ad hoc — no Developer ID certificate found)"

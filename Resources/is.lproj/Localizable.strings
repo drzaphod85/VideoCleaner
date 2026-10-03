@@ -50,6 +50,7 @@
 "Automatic Synchronization" = "Sjálfvirk samstilling";
 "Between keyframes" = "Á milli lykilramma";
 "brew install mkvtoolnix (optional)" = "brew install mkvtoolnix (valfrjálst)";
+"Built in, LGPL 2.1 or later. VideoCleaner uses a newer installed ffmpeg (e.g. from Homebrew) automatically." = "Innbyggt, LGPL 2.1 eða nýrra. VideoCleaner notar sjálfkrafa nýrri uppsetta ffmpeg (t.d. úr Homebrew).";
 "Cache" = "Skyndiminni";
 "Cancel" = "Hætta við";
 "Cancel processing (⌘.)" = "Hætta vinnslu (⌘.)";
@@ -124,6 +125,9 @@
 "Extracting (ffmpeg): s%lld %@, language=%@ → %@" = "Dreg út (ffmpeg): s%lld %@, tungumál=%@ → %@";
 "Extracting (mkvextract): s%lld %@, language=%@ → %@" = "Dreg út (mkvextract): s%lld %@, tungumál=%@ → %@";
 "Failed to extract s%lld" = "Ekki tókst að draga út s%lld";
+"ffmpeg %@ · built in" = "ffmpeg %@ · innbyggt";
+"ffmpeg %@ · chosen in Settings" = "ffmpeg %@ · valið í Stillingum";
+"ffmpeg %@ · installed (newer than the built-in)" = "ffmpeg %@ · uppsett (nýrra en það innbyggða)";
 "ffmpeg failed: %@" = "ffmpeg mistókst: %@";
 "ffmpeg was not found" = "ffmpeg fannst ekki";
 "ffmpeg/ffprobe — install with: brew install ffmpeg" = "ffmpeg/ffprobe — settu upp með: brew install ffmpeg";
@@ -211,6 +215,7 @@
 "No video found — skipping" = "Ekkert myndskeið fannst — sleppi";
 "No video to show" = "Ekkert myndskeið til að sýna";
 "none" = "ekkert";
+"Not included. Used when installed (GPL 2) — gives cleaner MKV remuxing." = "Fylgir ekki með. Notað ef það er uppsett (GPL 2) — gefur hreinni MKV-endurpökkun.";
 "Nothing else is touched — no cutting, extraction or cleaning. MKV files are changed in place in seconds." = "Engu öðru er breytt — engin klipping, útdráttur eða hreinsun. MKV-skrám er breytt á staðnum á sekúndum.";
 "Nothing to change — no languages were edited" = "Engu að breyta — engin tungumál hafa verið breytt";
 "Off: the file keeps its original format (MP4 stays MP4)" = "Slökkt: skráin heldur upprunalegu sniði (MP4 verður áfram MP4)";
@@ -308,6 +313,7 @@
 "Skipped: %@" = "Sleppt: %@";
 "Skipping s%lld (image-based %@, cannot become .srt)" = "Sleppi s%lld (myndbyggður %@, getur ekki orðið .srt)";
 "Snap to keyframes" = "Festa við lykilramma";
+"Source Code" = "Frumkóði";
 "Speed" = "Hraði";
 "speed corrected" = "hraði leiðréttur";
 "Start mark" = "Upphafsmerki";
@@ -336,6 +342,7 @@
 "The track has no language — choose one" = "Rásina vantar tungumál — veldu eitt";
 "The whole file" = "Öll skráin";
 "The whole file is marked as removed" = "Öll skráin er merkt sem fjarlægð";
+"Third-Party Software" = "Hugbúnaður frá þriðja aðila";
 "timing shifted" = "tímastillt";
 "Tools" = "Verkfæri";
 "Tools (leave empty to search automatically)" = "Verkfæri (skildu eftir autt fyrir sjálfvirka leit)";

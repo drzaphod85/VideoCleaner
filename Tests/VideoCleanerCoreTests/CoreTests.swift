@@ -272,3 +272,17 @@ final class LogBox: @unchecked Sendable {
         #expect(Languages.defaultFavorites(appLanguage: "en", region: "DE").prefix(2) == ["eng", "deu"])
     }
 }
+
+@Suite struct ToolVersionTests {
+    @Test func parsesAndComparesVersions() {
+        #expect(ToolPaths.parseVersion("ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers") == "9.0.2")
+        #expect(ToolPaths.parseVersion("ffmpeg version N-123456-gabcdef Copyright") == "N-123456-gabcdef")
+        #expect(ToolPaths.isNewer("9.1", than: "9.0.2"))
+        #expect(ToolPaths.isNewer("10.0", than: "9.0.2"))
+        #expect(!ToolPaths.isNewer("9.0.2", than: "9.0.2"))
+        #expect(!ToolPaths.isNewer("8.1.1", than: "9.0.2"))
+        #expect(ToolPaths.isNewer("9.0.2_1", than: "9.0.1"))
+        #expect(!ToolPaths.isNewer("N-123456-gabcdef", than: "9.0.2"))   // development builds don't replace the bundled one
+        #expect(ToolPaths.isNewer("9.0.2", than: nil))
+    }
+}
