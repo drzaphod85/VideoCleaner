@@ -38,7 +38,13 @@ brew install mkvtoolnix
 
 ## Installing
 
-Download the `.dmg` from [Releases](https://github.com/drzaphod85/VideoCleaner/releases) and drag **VideoCleaner** to Applications.
+With [Homebrew](https://brew.sh):
+
+```bash
+brew install --cask drzaphod85/tap/videocleaner
+```
+
+Or download the `.dmg` from [Releases](https://github.com/drzaphod85/VideoCleaner/releases) and drag **VideoCleaner** to Applications.
 
 The app is signed with a Developer ID and notarized by Apple (from version 1.2.0), so it opens like any other app. Universal (Apple silicon and Intel), macOS 15 or later.
 
@@ -108,6 +114,7 @@ Requires Xcode 16 or later (Swift 6 toolchain). The project is a plain Swift pac
    *Alternative:* an App Store Connect API key (Users and Access › Integrations › Team Keys, role Developer):
    `xcrun notarytool store-credentials VideoCleaner --key AuthKey_XXXX.p8 --key-id XXXX --issuer <issuer-id>`.
 4. Build: `Scripts/build-app.sh --notarize` → `build/VideoCleaner-<version>.dmg`, ready to upload as a release.
+5. Homebrew: in [drzaphod85/homebrew-tap](https://github.com/drzaphod85/homebrew-tap), set `version` and `sha256` (`shasum -a 256 build/VideoCleaner-<version>.dmg`) in `Casks/videocleaner.rb` and push.
 
 ## Translations
 
