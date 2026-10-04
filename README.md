@@ -40,11 +40,7 @@ brew install mkvtoolnix
 
 Download the `.dmg` from [Releases](https://github.com/drzaphod85/VideoCleaner/releases) and drag **VideoCleaner** to Applications.
 
-Release 1.2.0 is signed with a Developer ID but not yet notarized by Apple, so macOS asks the first time it is opened: open it once, then go to **System Settings › Privacy & Security** and click **Open Anyway**. Or run:
-
-```bash
-xattr -dr com.apple.quarantine /Applications/VideoCleaner.app
-```
+The app is signed with a Developer ID and notarized by Apple (from version 1.2.0), so it opens like any other app. Universal (Apple silicon and Intel), macOS 15 or later.
 
 ## Using it
 
