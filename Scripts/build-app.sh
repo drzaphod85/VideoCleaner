@@ -6,6 +6,12 @@
 #   Scripts/build-app.sh --notarize  # …DMG notarized by Apple and stapled (implies --dmg)
 #   Scripts/build-app.sh --debug     # debug build
 #   Scripts/build-app.sh --install   # …and install to ~/Applications (no admin rights needed)
+#   Scripts/build-app.sh --release   # notarized DMG → GitHub release v<VERSION> → Homebrew cask (implies --notarize)
+#
+# Releasing: the code must be committed and pushed. The DMG is uploaded to the GitHub release v<VERSION> (created
+# with the notes in RELEASE_NOTES.md when that file exists, else GitHub's generated notes; an existing release gets
+# its DMG replaced). Then version and sha256 in Casks/videocleaner.rb of the tap (TAP_DIR, default
+# ../homebrew-tap, cloned from drzaphod85/homebrew-tap when missing) are updated, committed and pushed.
 #
 # Signing: with a "Developer ID Application" certificate in the keychain the app is signed with it
 # (hardened runtime + secure timestamp); otherwise it is signed ad hoc. Override the certificate with
@@ -28,12 +34,18 @@ CONFIG="release"
 MAKE_DMG=0
 NOTARIZE=0
 INSTALL=0
+RELEASE=0
+REPO="drzaphod85/VideoCleaner"
+TAP_REPO="drzaphod85/homebrew-tap"
+TAP_DIR="${TAP_DIR:-$ROOT/../homebrew-tap}"
+CASK="Casks/videocleaner.rb"
 for arg in "$@"; do
     case "$arg" in
         --dmg) MAKE_DMG=1 ;;
         --notarize) MAKE_DMG=1; NOTARIZE=1 ;;
         --debug) CONFIG="debug" ;;
         --install) INSTALL=1 ;;
+        --release) MAKE_DMG=1; NOTARIZE=1; RELEASE=1 ;;
         *) echo "Unknown option: $arg" >&2; exit 1 ;;
     esac
 done
@@ -46,6 +58,18 @@ fi
 if [ "$NOTARIZE" = 1 ] && [ "$SIGN_IDENTITY" = "-" ]; then
     echo "Notarizing needs a Developer ID Application certificate in the keychain." >&2
     exit 1
+fi
+
+if [ "$RELEASE" = 1 ]; then
+    # Release exactly what is on GitHub: the tag is made from the pushed commit
+    command -v gh >/dev/null || { echo "Releasing needs the GitHub CLI (gh)." >&2; exit 1; }
+    if [ -n "$(git status --porcelain)" ]; then
+        echo "Commit your changes before releasing." >&2; exit 1
+    fi
+    git fetch -q origin
+    if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
+        echo "Push main before releasing (HEAD is not origin/main)." >&2; exit 1
+    fi
 fi
 
 # iCloud Drive sometimes creates "File 2.swift" duplicates that break the build
@@ -127,6 +151,38 @@ if [ "$MAKE_DMG" = 1 ]; then
     fi
     cp "$STAGE/$NAME.dmg" "$DMG"
     echo "✓ $DMG"
+fi
+
+if [ "$RELEASE" = 1 ]; then
+    TAG="v$VERSION"
+    SHA="$(shasum -a 256 "$DMG" | cut -d' ' -f1)"
+    if gh release view "$TAG" -R "$REPO" >/dev/null 2>&1; then
+        echo "▸ Replacing the DMG of release $TAG"
+        gh release upload "$TAG" "$DMG" -R "$REPO" --clobber
+    else
+        echo "▸ Creating release $TAG"
+        if [ -f RELEASE_NOTES.md ]; then NOTES=(--notes-file RELEASE_NOTES.md); else NOTES=(--generate-notes); fi
+        gh release create "$TAG" "$DMG" -R "$REPO" --target "$(git rev-parse HEAD)" --title "$NAME $VERSION" "${NOTES[@]}"
+    fi
+    # The cask must match what users download, so check the uploaded file itself
+    URL="https://github.com/$REPO/releases/download/$TAG/$NAME-$VERSION.dmg"
+    REMOTE_SHA="$(curl -sfL "$URL" | shasum -a 256 | cut -d' ' -f1)"
+    if [ "$REMOTE_SHA" != "$SHA" ]; then
+        echo "The DMG on GitHub ($REMOTE_SHA) differs from the local one ($SHA)." >&2; exit 1
+    fi
+    echo "✓ $URL"
+
+    echo "▸ Updating the Homebrew cask"
+    if [ ! -d "$TAP_DIR/.git" ]; then gh repo clone "$TAP_REPO" "$TAP_DIR" -- -q; fi
+    git -C "$TAP_DIR" pull -q --ff-only
+    sed -i '' -e "s/^  version \".*\"/  version \"$VERSION\"/" -e "s/^  sha256 \".*\"/  sha256 \"$SHA\"/" "$TAP_DIR/$CASK"
+    if git -C "$TAP_DIR" diff --quiet; then
+        echo "  (cask already up to date)"
+    else
+        git -C "$TAP_DIR" commit -q -am "videocleaner $VERSION"
+        git -C "$TAP_DIR" push -q
+        echo "✓ $TAP_REPO: videocleaner $VERSION ($SHA)"
+    fi
 fi
 
 mkdir -p "$ROOT/build"

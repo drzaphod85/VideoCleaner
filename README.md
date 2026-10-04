@@ -114,7 +114,7 @@ Requires Xcode 16 or later (Swift 6 toolchain). The project is a plain Swift pac
    *Alternative:* an App Store Connect API key (Users and Access › Integrations › Team Keys, role Developer):
    `xcrun notarytool store-credentials VideoCleaner --key AuthKey_XXXX.p8 --key-id XXXX --issuer <issuer-id>`.
 4. Build: `Scripts/build-app.sh --notarize` → `build/VideoCleaner-<version>.dmg`, ready to upload as a release.
-5. Homebrew: in [drzaphod85/homebrew-tap](https://github.com/drzaphod85/homebrew-tap), set `version` and `sha256` (`shasum -a 256 build/VideoCleaner-<version>.dmg`) in `Casks/videocleaner.rb` and push.
+5. Release: bump `VERSION`, commit and push, optionally write `RELEASE_NOTES.md`, then run `Scripts/build-app.sh --release`. It notarizes the DMG, uploads it to the GitHub release `v<version>` (creating the release if needed), checks that the uploaded file matches, and updates `version` and `sha256` in [drzaphod85/homebrew-tap](https://github.com/drzaphod85/homebrew-tap) (`TAP_DIR`, default `../homebrew-tap`).
 
 ## Translations
 
