@@ -9,7 +9,7 @@
 - 🏷️ **Languages** — set or fix track languages (tracks tagged `und` are highlighted). A "language tags only" mode changes MKV files in place in seconds.
 - 📦 **Container** — convert to MKV with one checkbox, or keep the original format.
 - 📼 **Old formats** — AVI (DivX/Xvid), WMV/ASF, FLV, MPEG/VOB, TS/M2TS, WebM, OGM, 3GP, RealMedia and DV are converted to MKV *without re-encoding* (missing timestamps rebuilt, packed DivX B-frames unpacked) — the easy way to give a media server an old collection in one modern container.
-- 🎧 **Add audio tracks** — take an audio track from another file (e.g. a Swedish dub from a TV recording or another release), synchronize it automatically against the film's own sound (offset and frame-rate speed difference, found with Accelerate FFTs), adjust by hand, and listen in the player before you process.
+- 🎧 **Add audio tracks** — take an audio track from another file (e.g. a Swedish dub from a TV recording or another release), synchronize it automatically against the film's own sound (offset and frame-rate speed difference, found with Accelerate FFTs), adjust by hand, and listen in the player before you process. The player's audio menu (or **A**) switches between all of the film's own and added tracks; the film's other tracks are prepared in the background in one pass, so switching is instant.
 - 🗂️ **Batch** — open single files, several files, a folder, or a folder full of subfolders — drag them onto the window or the app icon in the Dock. Every file gets its own cuts and track choices; the rules in the sidebar apply to all of them.
 - 🧪 **Dry run** — "Show Commands" lists exactly which `ffmpeg`/`mkvmerge` commands would run.
 
@@ -40,7 +40,7 @@ brew install mkvtoolnix
 
 Download the `.dmg` from [Releases](https://github.com/drzaphod85/VideoCleaner/releases) and drag **VideoCleaner** to Applications.
 
-The app is ad-hoc signed, not notarized. The first time, right-click the app and choose **Open**, or run:
+Release 1.2.0 is signed with a Developer ID but not yet notarized by Apple, so macOS asks the first time it is opened: open it once, then go to **System Settings › Privacy & Security** and click **Open Anyway**. Or run:
 
 ```bash
 xattr -dr com.apple.quarantine /Applications/VideoCleaner.app
