@@ -26,6 +26,8 @@ The app started as a port of a Bash script (`clean_and_extract_subs.sh`) and kee
 
 UI languages: English, Swedish, Danish, Norwegian (Bokmål), Finnish and Icelandic.
 
+📖 **[User guide in the wiki](https://github.com/drzaphod85/VideoCleaner/wiki)** — installation, cutting, tracks, adding audio, every option, and tips for Plex and Jellyfin.
+
 ## Requirements
 
 - macOS 15 Sequoia or later (Apple silicon or Intel)
